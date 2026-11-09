@@ -160,11 +160,14 @@ If you want to run the Django SQLite architecture on Windows or Linux:
 
 We have included a pre-configured GitHub Actions workflow at `.github/workflows/deploy.yml`:
 
-1. Push your code to your GitHub repository.
-2. On GitHub, navigate to **Settings** > **Pages**.
-3. Under **Build and deployment** > **Source**, select **"GitHub Actions"**.
-4. GitHub will automatically trigger the build and deploy your site to:
-   `https://YOUR_USERNAME.github.io/YOUR_REPO_NAME/`
+1. In your GitHub repository, open:
+   👉 **`https://github.com/19beeskicks-sys/19bees-kicks/settings/pages`**
+2. Under **"Build and deployment"** > **"Source"**:
+   Change from *"Deploy from a branch"* to 👉 **"GitHub Actions"**.
+   *(GitHub requires this one-time setting so GitHub Actions has permission to publish Pages).*
+3. Go back to the **Actions** tab (or click **"Re-run jobs"** on the failed run).
+4. Both **build** and **deploy** will turn green, and your site will be live at:
+   👉 **`https://19beeskicks-sys.github.io/19bees-kicks/`**
 
 ---
 
