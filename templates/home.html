@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="bg-[#111111] text-white py-20 border-b border-[#222222]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+        <span class="text-xs uppercase tracking-[0.3em] text-[#D8C7AE] font-semibold block">The Sovereign Footwear Collection</span>
+        <h1 class="text-4xl sm:text-6xl font-serif-luxury font-bold leading-tight">
+            STEP INTO YOUR STYLE.
+        </h1>
+        <p class="text-sm sm:text-base text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed">
+            Discover the perfect balance of modern design, everyday comfort, and timeless style. Handcrafted calfskin leathers designed in Pakistan.
+        </p>
+        <div class="pt-4 flex justify-center gap-4">
+            <a href="{% url 'shop' %}" class="bg-[#D8C7AE] text-[#111111] px-8 py-3.5 text-xs uppercase tracking-widest font-bold hover:bg-white transition-colors">
+                Shop Now
+            </a>
+            <a href="{% url 'all_collections' %}" class="border border-[#D8C7AE] text-white px-8 py-3.5 text-xs uppercase tracking-widest font-medium hover:bg-white/10 transition-colors">
+                Explore Collections
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Best Sellers -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-8">
+    <div class="flex justify-between items-end border-b border-[#EEEEEC] pb-4">
+        <div>
+            <span class="text-xs uppercase tracking-widest text-[#8C7A5E] font-bold block">Top Rated</span>
+            <h2 class="text-2xl font-serif-luxury font-bold text-[#111111]">Best Sellers</h2>
+        </div>
+        <a href="{% url 'shop' %}" class="text-xs uppercase font-bold text-[#111111] hover:text-[#8C7A5E]">View All &rarr;</a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        {% for product in best_sellers %}
+        <div class="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between hover:shadow-lg transition-all">
+            <div class="aspect-[4/3] bg-[#EEEEEC] overflow-hidden mb-4">
+                {% if product.images.first %}
+                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center text-xs text-neutral-400">19BeesKicks Luxury</div>
+                {% endif %}
+            </div>
+            <div>
+                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block">{{ product.get_category_display }}</span>
+                <h3 class="font-bold text-base text-[#111111] mt-1">{{ product.name }}</h3>
+                <div class="font-mono font-bold text-sm text-[#111111] mt-2">PKR {{ product.price }}</div>
+            </div>
+            <div class="pt-4 border-t border-[#EEEEEC] mt-4 flex gap-2">
+                <a href="{% url 'product_detail' product.slug %}" class="w-full bg-[#111111] text-white text-center py-2 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-12 text-xs text-neutral-500">
+            No products found in database yet. Add footwear in the <a href="/admin/" class="underline font-bold text-black">Django Admin Panel</a>.
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

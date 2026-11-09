@@ -1,0 +1,8 @@
+{
+  "name": "Remix 19BeesKicks - Luxury Footwear Store",
+  "description": "Ultra-premium luxury footwear e-commerce platform for 19BeesKicks. Every Step. Your Style.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

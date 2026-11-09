@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+    <div class="text-center space-y-2">
+        <h1 class="text-3xl font-serif-luxury font-bold text-[#111111]">Curated Footwear Collections</h1>
+        <p class="text-xs text-neutral-500">Explore handcrafted low-tops, casual loafers, and runners.</p>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white border p-6 text-center space-y-3">
+            <h3 class="font-bold text-lg">Men's Portfolio</h3>
+            <p class="text-xs text-neutral-500">Italian calfskin leathers and architectural sole units.</p>
+            <a href="{% url 'men_collection' %}" class="inline-block bg-[#111111] text-white px-4 py-2 text-xs uppercase font-semibold">View Collection</a>
+        </div>
+        <div class="bg-white border p-6 text-center space-y-3">
+            <h3 class="font-bold text-lg">Women's Portfolio</h3>
+            <p class="text-xs text-neutral-500">Champagne tones and featherlight lambskin comfort.</p>
+            <a href="{% url 'women_collection' %}" class="inline-block bg-[#111111] text-white px-4 py-2 text-xs uppercase font-semibold">View Collection</a>
+        </div>
+        <div class="bg-white border p-6 text-center space-y-3">
+            <h3 class="font-bold text-lg">Full Catalog</h3>
+            <p class="text-xs text-neutral-500">Explore all contemporary seasonal models.</p>
+            <a href="{% url 'shop' %}" class="inline-block bg-[#111111] text-white px-4 py-2 text-xs uppercase font-semibold">Explore All</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+    <div class="border-b border-[#EEEEEC] pb-4">
+        <h1 class="text-3xl font-serif-luxury font-bold text-[#111111]">Your Shopping Bag</h1>
+    </div>
+
+    {% if cart_items %}
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="lg:col-span-8 bg-white border border-[#EEEEEC] p-6 space-y-4">
+            {% for item in cart_items %}
+            <div class="flex justify-between items-center py-4 border-b border-[#EEEEEC] last:border-b-0 text-xs">
+                <div>
+                    <h3 class="font-bold text-sm text-[#111111]">{{ item.name }}</h3>
+                    <p class="text-neutral-500">Size: EU {{ item.size }} &bull; Qty: {{ item.quantity }}</p>
+                    <a href="{% url 'remove_from_cart' item.key %}" class="text-rose-600 hover:underline mt-1 inline-block">Remove</a>
+                </div>
+                <div class="font-mono font-bold text-sm text-[#111111]">
+                    PKR {{ item.total_price }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="lg:col-span-4 bg-white border border-[#EEEEEC] p-6 space-y-4 h-fit text-xs">
+            <h3 class="font-bold uppercase text-neutral-400">Order Summary</h3>
+            <div class="flex justify-between text-neutral-600">
+                <span>Subtotal</span>
+                <span class="font-mono font-bold text-[#111111]">PKR {{ subtotal }}</span>
+            </div>
+            <div class="flex justify-between text-neutral-600">
+                <span>Shipping</span>
+                <span class="font-mono font-bold text-[#111111]">
+                    {% if shipping == 0 %}FREE{% else %}PKR {{ shipping }}{% endif %}
+                </span>
+            </div>
+            <div class="pt-3 border-t border-[#EEEEEC] flex justify-between text-base font-bold text-[#111111]">
+                <span>Total</span>
+                <span class="font-mono">PKR {{ total }}</span>
+            </div>
+            <a href="{% url 'checkout' %}" class="block w-full bg-[#111111] text-white text-center py-3 uppercase tracking-widest font-semibold hover:bg-neutral-800">
+                Proceed to Checkout
+            </a>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-white border border-[#EEEEEC] p-12 text-center space-y-4">
+        <p class="text-xs text-neutral-500">Your shopping bag is empty.</p>
+        <a href="{% url 'shop' %}" class="inline-block bg-[#111111] text-white px-6 py-2.5 text-xs uppercase tracking-widest font-semibold">
+            Explore Footwear
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

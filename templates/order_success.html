@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-16 text-center space-y-6 bg-white border border-[#EEEEEC] my-12 p-8 shadow-sm">
+    <div class="w-16 h-16 bg-[#F8F8F6] border border-emerald-300 text-emerald-700 rounded-full flex items-center justify-center mx-auto text-2xl font-bold">
+        &check;
+    </div>
+    <span class="text-xs uppercase tracking-widest text-[#8C7A5E] font-bold block">Order Confirmed</span>
+    <h1 class="text-3xl font-serif-luxury font-bold text-[#111111]">Thank You for Your Order</h1>
+    <p class="text-xs text-neutral-600 max-w-md mx-auto">
+        Your order has been logged in our database under reference <strong class="font-mono text-black">{{ order.order_number }}</strong>.
+    </p>
+
+    <div class="p-4 bg-[#F8F8F6] border border-[#EEEEEC] text-xs grid grid-cols-2 gap-4 text-left">
+        <div>
+            <span class="text-neutral-400 block">Recipient</span>
+            <strong>{{ order.full_name }}</strong> ({{ order.phone }})
+        </div>
+        <div>
+            <span class="text-neutral-400 block">Total Due</span>
+            <strong class="font-mono">PKR {{ order.total }}</strong>
+        </div>
+        <div>
+            <span class="text-neutral-400 block">Payment Method</span>
+            <strong class="uppercase">{{ order.payment.method }}</strong> ({{ order.payment.status }})
+        </div>
+        <div>
+            <span class="text-neutral-400 block">Delivery City</span>
+            <strong>{{ order.city }}</strong>
+        </div>
+    </div>
+
+    <div class="pt-4 flex justify-center gap-3">
+        <a href="{% url 'track_order' %}?order_number={{ order.order_number }}" class="bg-[#111111] text-white px-6 py-2.5 text-xs uppercase font-semibold">
+            Track Delivery
+        </a>
+        <a href="{% url 'home' %}" class="border border-neutral-300 px-6 py-2.5 text-xs uppercase font-semibold">
+            Storefront
+        </a>
+    </div>
+</div>
+{% endblock %}
