@@ -17,34 +17,46 @@
 </head>
 <body class="antialiased flex flex-col min-h-screen">
     <!-- Micro announcement bar -->
-    <div class="bg-[#111111] text-white text-xs py-2 px-4 flex justify-between items-center tracking-wider">
-        <span class="text-neutral-400 hidden sm:inline">EVERY STEP. YOUR STYLE.</span>
-        <span class="mx-auto font-medium">Complimentary Shipping Across Pakistan on Orders over PKR 15,000</span>
-        <a href="{% url 'track_order' %}" class="text-[#D8C7AE] hover:underline">Track Order</a>
+    <div class="bg-[#111111] text-white text-xs py-2 px-4 flex justify-between items-center tracking-wider text-[11px]">
+        <span class="text-neutral-400 hidden md:inline">EVERY STEP. YOUR STYLE.</span>
+        <span class="mx-auto font-medium">Complimentary Express Shipping Across Pakistan On Orders Over PKR 15,000</span>
+        <div class="flex items-center gap-3">
+            <a href="/public/19BeesKicks-complete-project.zip" download class="text-neutral-300 hover:text-white transition-colors">Download ZIP</a>
+            <span class="text-neutral-600">|</span>
+            <a href="{% url 'track_order' %}" class="text-neutral-300 hover:text-white transition-colors">Track Order</a>
+        </div>
     </div>
 
     <!-- Top Navigation Bar -->
-    <header class="sticky top-0 z-40 bg-[#F8F8F6]/95 backdrop-blur-md border-b border-[#EEEEEC]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-8">
+    <header class="sticky top-0 z-40 bg-[#FFFFFF] border-b border-[#EEEEEC]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between gap-6">
             <a href="{% url 'home' %}" class="text-2xl font-serif-luxury font-bold tracking-[0.2em] text-[#111111] hover:text-[#8C7A5E]">
                 19BEESKICKS
             </a>
 
-            <nav class="hidden lg:flex items-center gap-8 text-xs uppercase tracking-[0.18em] font-semibold">
-                <a href="{% url 'shop' %}" class="hover:text-[#8C7A5E]">Shop All</a>
-                <a href="{% url 'men_collection' %}" class="hover:text-[#8C7A5E]">Men</a>
-                <a href="{% url 'women_collection' %}" class="hover:text-[#8C7A5E]">Women</a>
-                <a href="{% url 'all_collections' %}" class="hover:text-[#8C7A5E]">Collections</a>
-                <a href="{% url 'our_story' %}" class="hover:text-[#8C7A5E]">Our Story</a>
-                <a href="{% url 'contact' %}" class="hover:text-[#8C7A5E]">Contact</a>
+            <nav class="hidden lg:flex items-center gap-7 text-xs uppercase tracking-[0.16em] font-semibold text-[#111111]">
+                <a href="{% url 'shop' %}" class="hover:text-[#8C7A5E] transition-colors">Shop All</a>
+                <a href="{% url 'men_collection' %}" class="hover:text-[#8C7A5E] transition-colors">Men</a>
+                <a href="{% url 'women_collection' %}" class="hover:text-[#8C7A5E] transition-colors">Women</a>
+                <a href="{% url 'all_collections' %}" class="hover:text-[#8C7A5E] transition-colors">Collections</a>
+                <a href="{% url 'our_story' %}" class="hover:text-[#8C7A5E] transition-colors">Our Story</a>
+                <a href="{% url 'contact' %}" class="hover:text-[#8C7A5E] transition-colors">Contact</a>
             </nav>
 
-            <div class="flex items-center gap-4">
-                <a href="{% url 'cart_view' %}" class="bg-[#111111] text-white px-4 py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
-                    Shopping Bag
+            <div class="flex items-center gap-5">
+                <a href="{% url 'shop' %}" class="text-[#111111] hover:text-[#8C7A5E] transition-colors" title="Search">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </a>
-                <a href="/admin/" class="border border-[#111111] text-[#111111] px-3 py-2 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-100">
-                    Admin
+                <a href="{% url 'shop' %}" class="text-[#111111] hover:text-[#8C7A5E] transition-colors" title="Wishlist">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                </a>
+                <a href="/admin/" class="text-[#111111] hover:text-[#8C7A5E] transition-colors" title="Account / Admin">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                </a>
+                <a href="{% url 'cart_view' %}" class="bg-[#111111] text-white px-4 py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800 flex items-center gap-2">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    <span>BAG</span>
+                    <span class="bg-[#D8C7AE] text-[#111111] text-[10px] w-4 h-4 rounded-full flex items-center justify-center font-bold">0</span>
                 </a>
             </div>
         </div>

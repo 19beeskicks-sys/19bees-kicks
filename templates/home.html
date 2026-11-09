@@ -1,63 +1,166 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="bg-[#111111] text-white py-20 border-b border-[#222222]">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-        <span class="text-xs uppercase tracking-[0.3em] text-[#D8C7AE] font-semibold block">The Sovereign Footwear Collection</span>
-        <h1 class="text-4xl sm:text-6xl font-serif-luxury font-bold leading-tight">
-            STEP INTO YOUR STYLE.
-        </h1>
-        <p class="text-sm sm:text-base text-neutral-300 max-w-2xl mx-auto font-light leading-relaxed">
-            Discover the perfect balance of modern design, everyday comfort, and timeless style. Handcrafted calfskin leathers designed in Pakistan.
-        </p>
-        <div class="pt-4 flex justify-center gap-4">
-            <a href="{% url 'shop' %}" class="bg-[#D8C7AE] text-[#111111] px-8 py-3.5 text-xs uppercase tracking-widest font-bold hover:bg-white transition-colors">
-                Shop Now
-            </a>
-            <a href="{% url 'all_collections' %}" class="border border-[#D8C7AE] text-white px-8 py-3.5 text-xs uppercase tracking-widest font-medium hover:bg-white/10 transition-colors">
-                Explore Collections
-            </a>
+<!-- 1. CINEMATIC LUXURY HERO SECTION (Matches Image 1) -->
+<section class="relative overflow-hidden bg-[#111111] text-[#FFFFFF]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <!-- Left Copy Column -->
+            <div class="lg:col-span-6 space-y-6 z-10">
+                <div class="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[#D8C7AE] font-semibold">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l2.4 7.2h7.6l-6 4.8 2.4 7.2-6-4.8-6 4.8 2.4-7.2-6-4.8h7.6z"/></svg>
+                    <span>The 2026 Sovereign Edition</span>
+                </div>
+
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif-luxury font-bold leading-[1.1] tracking-tight">
+                    STEP INTO YOUR STYLE.
+                </h1>
+
+                <p class="text-base sm:text-lg text-neutral-300 font-light max-w-xl leading-relaxed">
+                    Discover the perfect balance of modern design, everyday comfort, and timeless style. Handcrafted with imported leathers for the discerning connoisseur.
+                </p>
+
+                <!-- Action Buttons -->
+                <div class="pt-4 flex flex-wrap items-center gap-4">
+                    <a href="{% url 'shop' %}" class="bg-[#D8C7AE] text-[#111111] px-8 py-3.5 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-all shadow-xl flex items-center gap-2">
+                        <span>Shop Now</span>
+                        <span>&rarr;</span>
+                    </a>
+                    <a href="{% url 'all_collections' %}" class="border border-[#D8C7AE] text-[#FFFFFF] px-8 py-3.5 text-xs uppercase tracking-[0.2em] font-medium hover:bg-white/10 transition-all">
+                        Explore Collections
+                    </a>
+                </div>
+
+                <!-- Trust Callouts -->
+                <div class="pt-6 border-t border-[#222222] grid grid-cols-3 gap-4 text-xs text-neutral-400">
+                    <div>
+                        <div class="font-semibold text-white">Full-Grain Leather</div>
+                        <div class="text-[11px] text-neutral-400">Handpicked hides</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-white">Express Delivery</div>
+                        <div class="text-[11px] text-neutral-400">2-4 Days nationwide</div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-white">JazzCash & COD</div>
+                        <div class="text-[11px] text-neutral-400">Verified checkout</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Cinematic Footwear Imagery -->
+            <div class="lg:col-span-6 relative">
+                <div class="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] overflow-hidden shadow-2xl border border-white/10">
+                    <img
+                        src="/images/hero_luxury_sneaker_1794183121618.jpg"
+                        alt="19BeesKicks Sovereign Luxury Footwear"
+                        class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
+                        onerror="this.onerror=null; this.src='/src/assets/images/hero_luxury_sneaker_1794183121618.jpg';"
+                    />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none"></div>
+                    <div class="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white text-xs">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-widest text-[#D8C7AE] block">Featured Model</span>
+                            <span class="font-serif-luxury font-bold text-sm">Aethel Travertine Runner</span>
+                        </div>
+                        <span class="font-mono text-sm font-bold bg-[#111111]/80 backdrop-blur-sm px-2.5 py-1 border border-white/20">
+                            PKR 24,500
+                        </span>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
 
-<!-- Best Sellers -->
+<!-- 2. BEST SELLERS SECTION -->
 <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-8">
     <div class="flex justify-between items-end border-b border-[#EEEEEC] pb-4">
         <div>
             <span class="text-xs uppercase tracking-widest text-[#8C7A5E] font-bold block">Top Rated</span>
-            <h2 class="text-2xl font-serif-luxury font-bold text-[#111111]">Best Sellers</h2>
+            <h2 class="text-2xl sm:text-3xl font-serif-luxury font-bold text-[#111111]">Best Sellers</h2>
         </div>
-        <a href="{% url 'shop' %}" class="text-xs uppercase font-bold text-[#111111] hover:text-[#8C7A5E]">View All &rarr;</a>
+        <a href="{% url 'shop' %}" class="text-xs uppercase font-bold text-[#111111] hover:text-[#8C7A5E] flex items-center gap-1">
+            <span>View All</span>
+            <span>&rarr;</span>
+        </a>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        {% for product in best_sellers %}
-        <div class="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between hover:shadow-lg transition-all">
-            <div class="aspect-[4/3] bg-[#EEEEEC] overflow-hidden mb-4">
-                {% if product.images.first %}
-                <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
-                {% else %}
-                <div class="w-full h-full flex items-center justify-center text-xs text-neutral-400">19BeesKicks Luxury</div>
-                {% endif %}
+        {% if best_sellers %}
+            {% for product in best_sellers %}
+            <div class="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between hover:shadow-lg transition-all">
+                <div class="aspect-[4/3] bg-[#EEEEEC] overflow-hidden mb-4">
+                    {% if product.images.first %}
+                    <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <img src="/images/product_men_sneaker_1794183121675.jpg" alt="{{ product.name }}" class="w-full h-full object-cover" onerror="this.src='/src/assets/images/product_men_sneaker_1794183121675.jpg';">
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block">{{ product.get_category_display }}</span>
+                    <h3 class="font-bold text-base text-[#111111] mt-1">{{ product.name }}</h3>
+                    <div class="font-mono font-bold text-sm text-[#111111] mt-2">PKR {{ product.price }}</div>
+                </div>
+                <div class="pt-4 border-t border-[#EEEEEC] mt-4 flex gap-2">
+                    <a href="{% url 'product_detail' product.slug %}" class="w-full bg-[#111111] text-white text-center py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
+                        View Details
+                    </a>
+                </div>
             </div>
-            <div>
-                <span class="text-[11px] uppercase tracking-wider text-neutral-400 font-semibold block">{{ product.get_category_display }}</span>
-                <h3 class="font-bold text-base text-[#111111] mt-1">{{ product.name }}</h3>
-                <div class="font-mono font-bold text-sm text-[#111111] mt-2">PKR {{ product.price }}</div>
+            {% endfor %}
+        {% else %}
+            <!-- Pre-Seeded Fallback Cards so the page is NEVER blank even before running python manage.py seed_data -->
+            <div class="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between hover:shadow-lg transition-all">
+                <div class="aspect-[4/3] bg-[#EEEEEC] overflow-hidden mb-4">
+                    <img src="/images/product_men_sneaker_1794183121675.jpg" alt="The Sovereign Low Obsidian" class="w-full h-full object-cover" onerror="this.src='/src/assets/images/product_men_sneaker_1794183121675.jpg';">
+                </div>
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-[#8C7A5E] font-semibold block">Men's Luxury</span>
+                    <h3 class="font-bold text-base text-[#111111] mt-1">The Sovereign Low Obsidian</h3>
+                    <div class="font-mono font-bold text-sm text-[#111111] mt-2">PKR 18,500</div>
+                </div>
+                <div class="pt-4 border-t border-[#EEEEEC] mt-4">
+                    <a href="{% url 'shop' %}" class="block w-full bg-[#111111] text-white text-center py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
+                        View Details
+                    </a>
+                </div>
             </div>
-            <div class="pt-4 border-t border-[#EEEEEC] mt-4 flex gap-2">
-                <a href="{% url 'product_detail' product.slug %}" class="w-full bg-[#111111] text-white text-center py-2 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
-                    View Details
-                </a>
+
+            <div class="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between hover:shadow-lg transition-all">
+                <div class="aspect-[4/3] bg-[#EEEEEC] overflow-hidden mb-4">
+                    <img src="/images/hero_luxury_sneaker_1794183121618.jpg" alt="Aethel Travertine Runner" class="w-full h-full object-cover" onerror="this.src='/src/assets/images/hero_luxury_sneaker_1794183121618.jpg';">
+                </div>
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-[#8C7A5E] font-semibold block">Designer Sneakers</span>
+                    <h3 class="font-bold text-base text-[#111111] mt-1">Aethel Travertine Runner</h3>
+                    <div class="font-mono font-bold text-sm text-[#111111] mt-2">PKR 24,500</div>
+                </div>
+                <div class="pt-4 border-t border-[#EEEEEC] mt-4">
+                    <a href="{% url 'shop' %}" class="block w-full bg-[#111111] text-white text-center py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
+                        View Details
+                    </a>
+                </div>
             </div>
-        </div>
-        {% empty %}
-        <div class="col-span-3 text-center py-12 text-xs text-neutral-500">
-            No products found in database yet. Add footwear in the <a href="/admin/" class="underline font-bold text-black">Django Admin Panel</a>.
-        </div>
-        {% endfor %}
+
+            <div class="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between hover:shadow-lg transition-all">
+                <div class="aspect-[4/3] bg-[#EEEEEC] overflow-hidden mb-4">
+                    <img src="/images/product_women_runner_1794183121544.jpg" alt="Eline Champagne Runner" class="w-full h-full object-cover" onerror="this.src='/src/assets/images/product_women_runner_1794183121544.jpg';">
+                </div>
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-[#8C7A5E] font-semibold block">Women's Luxury</span>
+                    <h3 class="font-bold text-base text-[#111111] mt-1">Eline Champagne Runner</h3>
+                    <div class="font-mono font-bold text-sm text-[#111111] mt-2">PKR 19,800</div>
+                </div>
+                <div class="pt-4 border-t border-[#EEEEEC] mt-4">
+                    <a href="{% url 'shop' %}" class="block w-full bg-[#111111] text-white text-center py-2.5 text-xs uppercase tracking-widest font-semibold hover:bg-neutral-800">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

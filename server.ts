@@ -457,6 +457,8 @@ async function setupServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.resolve(__dirname, 'dist');
+    app.use('/src/assets', express.static(path.resolve(__dirname, 'src', 'assets')));
+    app.use('/images', express.static(path.resolve(__dirname, 'public', 'images')));
     app.use(express.static(distPath));
     app.get('*', (_req: Request, res: Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
