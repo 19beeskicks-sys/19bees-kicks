@@ -249,40 +249,61 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             </div>
 
-            <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
-              <Check className="w-3.5 h-3.5" />
-              <span>In Stock ({product.stockCount} pairs left)</span>
-            </span>
+            {product.stockCount <= 0 || !product.inStock ? (
+              <span className="text-xs text-rose-700 font-bold flex items-center gap-1 bg-rose-50 px-2 py-1 border border-rose-200">
+                <span>Sold Out (Awaiting Atelier Restock)</span>
+              </span>
+            ) : product.stockCount <= 3 ? (
+              <span className="text-xs text-amber-700 font-semibold flex items-center gap-1">
+                <span>Low Stock: Only {product.stockCount} left</span>
+              </span>
+            ) : (
+              <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1">
+                <Check className="w-3.5 h-3.5" />
+                <span>In Stock ({product.stockCount} pairs available)</span>
+              </span>
+            )}
           </div>
 
           {/* Action Buttons: Add to Bag & Buy Now */}
           <div className="space-y-2.5 pt-4">
-            <button
-              onClick={handleAddToCart}
-              className="w-full bg-[#111111] text-white py-3.5 px-6 text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#333333] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-lg"
-            >
-              <ShoppingBag className="w-4 h-4 text-[#D8C7AE]" />
-              <span>Add to Shopping Bag</span>
-            </button>
+            {product.stockCount <= 0 || !product.inStock ? (
+              <button
+                disabled
+                className="w-full bg-neutral-300 text-neutral-500 py-3.5 px-6 text-xs uppercase tracking-[0.2em] font-bold cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                <span>Sold Out</span>
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full bg-[#111111] text-white py-3.5 px-6 text-xs uppercase tracking-[0.2em] font-bold hover:bg-[#333333] transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-lg"
+                >
+                  <ShoppingBag className="w-4 h-4 text-[#D8C7AE]" />
+                  <span>Add to Shopping Bag</span>
+                </button>
 
-            <div className="flex gap-2">
-              <button
-                onClick={handleBuyNow}
-                className="flex-1 bg-[#D8C7AE] text-[#111111] py-3 px-4 text-xs uppercase tracking-[0.15em] font-bold hover:bg-[#C9B89D] transition-colors cursor-pointer"
-              >
-                Instant Checkout
-              </button>
-              
-              <button
-                onClick={() => toggleWishlist(product)}
-                className={`p-3 border border-[#EEEEEC] hover:bg-neutral-50 transition-colors cursor-pointer ${
-                  wishlisted ? 'text-rose-600' : 'text-neutral-700'
-                }`}
-                title={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
-              >
-                <Heart className={`w-4 h-4 ${wishlisted ? 'fill-rose-600' : ''}`} />
-              </button>
-            </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleBuyNow}
+                    className="flex-1 bg-[#D8C7AE] text-[#111111] py-3 px-4 text-xs uppercase tracking-[0.15em] font-bold hover:bg-[#C9B89D] transition-colors cursor-pointer"
+                  >
+                    Instant Checkout
+                  </button>
+
+                  <button
+                    onClick={() => toggleWishlist(product)}
+                    className={`p-3 border border-[#EEEEEC] hover:bg-neutral-50 transition-colors cursor-pointer ${
+                      wishlisted ? 'text-rose-600' : 'text-neutral-700'
+                    }`}
+                    title={wishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
+                  >
+                    <Heart className={`w-4 h-4 ${wishlisted ? 'fill-rose-600' : ''}`} />
+                  </button>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Trust Guarantees */}

@@ -11,7 +11,12 @@ export const CheckoutPage: React.FC = () => {
     setCurrentPage,
     formatPKR,
     setActiveTrackingOrder,
-    showToast
+    showToast,
+    siteSettings,
+    appliedCoupon,
+    discountAmount,
+    applyCoupon,
+    removeCoupon
   } = useShop();
 
   const [fullName, setFullName] = useState(user?.name || '');
@@ -21,6 +26,10 @@ export const CheckoutPage: React.FC = () => {
   const [city, setCity] = useState(user?.address?.city || 'Karachi');
   const [postalCode, setPostalCode] = useState(user?.address?.postalCode || '');
   const [deliveryNotes, setDeliveryNotes] = useState('');
+
+  // Coupon code input state
+  const [couponInput, setCouponInput] = useState('');
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
 
   // Payment Method Selection
   const [paymentMethod, setPaymentMethod] = useState<'jazzcash' | 'easypaisa' | 'bank_transfer' | 'cod'>('jazzcash');
@@ -32,9 +41,10 @@ export const CheckoutPage: React.FC = () => {
   const [completedOrder, setCompletedOrder] = useState<any | null>(null);
   const [copiedAccount, setCopiedAccount] = useState(false);
 
-  const FREE_SHIPPING_THRESHOLD = 15000;
-  const shipping = cartSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : 250;
-  const grandTotal = cartSubtotal + shipping;
+  const FREE_SHIPPING_THRESHOLD = siteSettings?.freeShippingThreshold || 15000;
+  const standardFee = siteSettings?.standardShippingFee || 250;
+  const shipping = cartSubtotal >= FREE_SHIPPING_THRESHOLD ? 0 : standardFee;
+  const grandTotal = Math.max(0, cartSubtotal - discountAmount + shipping);
 
   const pakistaniCities = [
     'Karachi',
@@ -52,11 +62,22 @@ export const CheckoutPage: React.FC = () => {
     'Bahawalpur'
   ];
 
+  const jcNumber = siteSettings?.jazzcashAccountNumber || '03238917805';
+  const jcTitle = siteSettings?.jazzcashAccountTitle || 'Abdul Samad';
+
   const handleCopyJazzCash = () => {
-    navigator.clipboard.writeText('03238917805');
+    navigator.clipboard.writeText(jcNumber);
     setCopiedAccount(true);
-    showToast('JazzCash Number 03238917805 copied to clipboard');
+    showToast(`JazzCash Number ${jcNumber} copied to clipboard`);
     setTimeout(() => setCopiedAccount(false), 2500);
+  };
+
+  const handleApplyCouponCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!couponInput.trim()) return;
+    setApplyingCoupon(true);
+    await applyCoupon(couponInput.trim());
+    setApplyingCoupon(false);
   };
 
   const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +132,8 @@ export const CheckoutPage: React.FC = () => {
           price: item.product.price
         })),
         paymentMethod,
+        couponCode: appliedCoupon?.code || undefined,
+        discountAmount: discountAmount || 0,
         paymentDetails: {
           transactionId: transactionId.trim() || undefined,
           screenshotUrl: screenshotPreview || undefined
@@ -425,13 +448,13 @@ export const CheckoutPage: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white p-4 border border-[#EEEEEC] text-xs">
                   <div>
                     <span className="text-neutral-500 block text-[11px]">Account Title</span>
-                    <span className="font-bold text-sm text-[#111111]">Abdul Samad</span>
+                    <span className="font-bold text-sm text-[#111111]">{jcTitle}</span>
                   </div>
 
                   <div>
                     <span className="text-neutral-500 block text-[11px]">JazzCash Mobile Number</span>
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-base text-[#111111]">03238917805</span>
+                      <span className="font-mono font-bold text-base text-[#111111]">{jcNumber}</span>
                       <button
                         type="button"
                         onClick={handleCopyJazzCash}
@@ -451,7 +474,7 @@ export const CheckoutPage: React.FC = () => {
                   <ol className="list-decimal list-inside space-y-1 text-neutral-600 pl-1">
                     <li>Open your JazzCash App or dial <strong>*786#</strong></li>
                     <li>Choose <strong>Send Money</strong> → <strong>To JazzCash Account</strong></li>
-                    <li>Enter Recipient: <strong>03238917805</strong> (Verify Title: <strong>Abdul Samad</strong>)</li>
+                    <li>Enter Recipient: <strong>{jcNumber}</strong> (Verify Title: <strong>{jcTitle}</strong>)</li>
                     <li>Enter Amount: <strong>{formatPKR(grandTotal)}</strong></li>
                     <li>Enter your MPIN to confirm payment</li>
                     <li>Enter the 10-12 digit <strong>Transaction ID (TID)</strong> below to verify your order</li>
@@ -579,12 +602,61 @@ export const CheckoutPage: React.FC = () => {
               ))}
             </div>
 
+            {/* Promo Code Input Box */}
+            <div className="pt-4 border-t border-[#EEEEEC]">
+              <div className="text-xs font-semibold text-neutral-700 mb-1.5 flex items-center justify-between">
+                <span>Promotional Voucher / Coupon</span>
+                <span className="text-[10px] text-neutral-400 font-mono">e.g. WELCOME10, BEES2000</span>
+              </div>
+              {appliedCoupon ? (
+                <div className="flex items-center justify-between bg-emerald-50 border border-emerald-200 p-2.5 text-xs text-emerald-800">
+                  <div>
+                    <span className="font-bold font-mono">{appliedCoupon.code}</span>
+                    <span className="ml-2 text-[11px] text-emerald-600">
+                      ({appliedCoupon.discountType === 'percentage' ? `${appliedCoupon.discountValue}% OFF` : `-${formatPKR(appliedCoupon.discountValue)}`})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeCoupon}
+                    className="text-rose-600 hover:text-rose-800 font-bold text-xs cursor-pointer ml-2"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ) : (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponInput}
+                    onChange={e => setCouponInput(e.target.value.toUpperCase())}
+                    placeholder="Enter Coupon Code"
+                    className="flex-1 bg-[#F8F8F6] border border-[#EEEEEC] px-3 py-2 text-xs font-mono uppercase tracking-wider outline-none focus:border-[#111111]"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCouponCode}
+                    disabled={applyingCoupon || !couponInput.trim()}
+                    className="bg-[#111111] text-white px-4 py-2 text-xs uppercase tracking-wider font-bold hover:bg-[#333333] transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    {applyingCoupon ? '...' : 'Apply'}
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* Financial math */}
             <div className="space-y-2 pt-4 border-t border-[#EEEEEC] text-xs">
               <div className="flex justify-between text-neutral-600">
                 <span>Subtotal</span>
                 <span className="font-mono font-semibold text-[#111111]">{formatPKR(cartSubtotal)}</span>
               </div>
+              {discountAmount > 0 && (
+                <div className="flex justify-between text-emerald-700 font-medium">
+                  <span>Coupon Discount ({appliedCoupon?.code})</span>
+                  <span className="font-mono font-bold">-{formatPKR(discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-neutral-600">
                 <span>Standard Delivery (Pakistan)</span>
                 <span className="font-mono font-semibold text-[#111111]">

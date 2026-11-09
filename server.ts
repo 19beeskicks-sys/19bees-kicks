@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
-import { db, Product, Order, User } from './server/db.js';
+import { db, Product, Order, User, Collection, Category, Coupon, SiteSettings } from './server/db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -219,7 +219,7 @@ app.post('/api/auth/login', (req: Request, res: Response) => {
 // Orders: Create Order
 app.post('/api/orders', (req: Request, res: Response) => {
   try {
-    const { customer, items, paymentMethod, paymentDetails, userId } = req.body;
+    const { customer, items, paymentMethod, paymentDetails, userId, couponCode, discountAmount } = req.body;
 
     if (!customer?.fullName || !customer?.phone || !customer?.address || !customer?.city) {
       return res.status(400).json({ success: false, message: 'Complete delivery details are required' });
@@ -254,9 +254,12 @@ app.post('/api/orders', (req: Request, res: Response) => {
       });
     }
 
-    // Free delivery over 15,000 PKR, else 250 PKR standard shipping in Pakistan
-    const shipping = subtotal >= 15000 ? 0 : 250;
-    const grandTotal = subtotal + shipping;
+    const settings = db.getSiteSettings();
+    const threshold = settings?.freeShippingThreshold || 15000;
+    const standardFee = settings?.standardShippingFee || 250;
+    const shipping = subtotal >= threshold ? 0 : standardFee;
+    const discount = discountAmount ? Number(discountAmount) : 0;
+    const grandTotal = Math.max(0, subtotal - discount + shipping);
 
     const randomSuffix = Math.floor(1000 + Math.random() * 9000);
     const orderNumber = `19BK-${new Date().getFullYear()}-${randomSuffix}`;
@@ -276,6 +279,8 @@ app.post('/api/orders', (req: Request, res: Response) => {
       },
       items: validatedItems,
       subtotal,
+      discountAmount: discount,
+      couponCode: couponCode || undefined,
       shipping,
       total: grandTotal,
       payment: {
@@ -441,6 +446,205 @@ app.get('/api/admin/stats', (_req: Request, res: Response) => {
       lowStockProducts,
       recentOrders: orders.slice(0, 5)
     });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Admin Financials & Comprehensive Analytics
+app.get('/api/admin/financials', (_req: Request, res: Response) => {
+  try {
+    const report = db.getFinancialAnalytics();
+    res.json({ success: true, financials: report });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// Quick Stock Adjustment
+app.put('/api/products/:id/stock', (req: Request, res: Response) => {
+  try {
+    const { stockCount } = req.body;
+    if (stockCount === undefined || isNaN(Number(stockCount))) {
+      return res.status(400).json({ success: false, message: 'Valid stockCount number is required' });
+    }
+    const updated = db.updateProductStock(req.params.id, Number(stockCount));
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    res.json({ success: true, product: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ---------------- COLLECTIONS CRUD ----------------
+app.get('/api/collections', (_req: Request, res: Response) => {
+  res.json({ success: true, collections: db.getCollections() });
+});
+
+app.post('/api/collections', (req: Request, res: Response) => {
+  try {
+    const { title, subtitle, description, image, tag } = req.body;
+    if (!title) return res.status(400).json({ success: false, message: 'Collection title is required' });
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const newCol: Collection = {
+      id: `col-${Date.now()}`,
+      title,
+      slug,
+      subtitle: subtitle || 'Curated luxury footwear edition',
+      description: description || '',
+      image: image || '/images/hero_luxury_sneaker_1794183121618.jpg',
+      tag: tag || slug
+    };
+    const saved = db.addCollection(newCol);
+    res.status(201).json({ success: true, collection: saved });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.put('/api/collections/:id', (req: Request, res: Response) => {
+  try {
+    const updated = db.updateCollection(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ success: false, message: 'Collection not found' });
+    res.json({ success: true, collection: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/collections/:id', (req: Request, res: Response) => {
+  try {
+    const deleted = db.deleteCollection(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Collection not found' });
+    res.json({ success: true, message: 'Collection deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ---------------- CATEGORIES CRUD ----------------
+app.get('/api/categories', (_req: Request, res: Response) => {
+  res.json({ success: true, categories: db.getCategories() });
+});
+
+app.post('/api/categories', (req: Request, res: Response) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ success: false, message: 'Category name is required' });
+    const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+    const newCat: Category = {
+      id: `cat-${Date.now()}`,
+      name,
+      slug,
+      description: description || ''
+    };
+    const saved = db.addCategory(newCat);
+    res.status(201).json({ success: true, category: saved });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.put('/api/categories/:id', (req: Request, res: Response) => {
+  try {
+    const updated = db.updateCategory(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ success: false, message: 'Category not found' });
+    res.json({ success: true, category: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/categories/:id', (req: Request, res: Response) => {
+  try {
+    const deleted = db.deleteCategory(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Category not found' });
+    res.json({ success: true, message: 'Category deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ---------------- COUPONS CRUD & VALIDATION ----------------
+app.get('/api/coupons', (_req: Request, res: Response) => {
+  res.json({ success: true, coupons: db.getCoupons() });
+});
+
+app.post('/api/coupons', (req: Request, res: Response) => {
+  try {
+    const { code, discountType, discountValue, minPurchase, isActive, expiryDate } = req.body;
+    if (!code || !discountValue) {
+      return res.status(400).json({ success: false, message: 'Coupon code and discount value are required' });
+    }
+    const newCoupon: Coupon = {
+      id: `cp-${Date.now()}`,
+      code: code.toUpperCase().trim(),
+      discountType: discountType === 'fixed' ? 'fixed' : 'percentage',
+      discountValue: Number(discountValue),
+      minPurchase: minPurchase ? Number(minPurchase) : 0,
+      isActive: isActive !== undefined ? Boolean(isActive) : true,
+      usageCount: 0,
+      expiryDate: expiryDate || undefined
+    };
+    const saved = db.addCoupon(newCoupon);
+    res.status(201).json({ success: true, coupon: saved });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.put('/api/coupons/:id', (req: Request, res: Response) => {
+  try {
+    const updated = db.updateCoupon(req.params.id, req.body);
+    if (!updated) return res.status(404).json({ success: false, message: 'Coupon not found' });
+    res.json({ success: true, coupon: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.delete('/api/coupons/:id', (req: Request, res: Response) => {
+  try {
+    const deleted = db.deleteCoupon(req.params.id);
+    if (!deleted) return res.status(404).json({ success: false, message: 'Coupon not found' });
+    res.json({ success: true, message: 'Coupon deleted successfully' });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+app.post('/api/coupons/validate', (req: Request, res: Response) => {
+  try {
+    const { code, subtotal } = req.body;
+    if (!code) return res.status(400).json({ success: false, message: 'Coupon code is required' });
+    const result = db.validateCoupon(code, Number(subtotal || 0));
+    res.json({ success: result.valid, ...result });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ---------------- SITE SETTINGS & SHIPPING ----------------
+app.get('/api/settings', (_req: Request, res: Response) => {
+  res.json({ success: true, settings: db.getSiteSettings() });
+});
+
+app.put('/api/settings', (req: Request, res: Response) => {
+  try {
+    const updated = db.updateSiteSettings(req.body);
+    res.json({ success: true, settings: updated });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+// ---------------- CUSTOMERS DIRECTORY ----------------
+app.get('/api/customers', (_req: Request, res: Response) => {
+  try {
+    const customers = db.getCustomersList();
+    res.json({ success: true, count: customers.length, customers });
   } catch (error: any) {
     res.status(500).json({ success: false, message: error.message });
   }

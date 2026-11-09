@@ -11,7 +11,8 @@ export const Navbar: React.FC = () => {
     setIsCartOpen,
     user,
     setSelectedCollection,
-    setActiveTrackingOrder
+    setActiveTrackingOrder,
+    siteSettings
   } = useShop();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -38,7 +39,7 @@ export const Navbar: React.FC = () => {
       {/* Top micro announcement bar */}
       <div className="bg-[#111111] text-[#F8F8F6] text-xs py-1.5 px-4 text-center tracking-wider flex items-center justify-between">
         <span className="hidden sm:inline-block text-neutral-400">EVERY STEP. YOUR STYLE.</span>
-        <span className="mx-auto font-medium">Complimentary Express Shipping Across Pakistan On Orders Over PKR 15,000</span>
+        <span className="mx-auto font-medium">{siteSettings?.announcementText || 'Complimentary Express Shipping Across Pakistan On Orders Over PKR 15,000'}</span>
         <div className="flex items-center gap-3">
           <a
             href="/api/download-zip"

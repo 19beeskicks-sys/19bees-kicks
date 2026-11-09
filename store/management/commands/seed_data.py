@@ -135,6 +135,66 @@ class Command(BaseCommand):
                 'rating': Decimal('4.9'),
                 'review_count': 31,
                 'sizes': [37, 38, 39, 40, 41]
+            },
+            {
+                'name': 'Verona Suede Driving Loafer',
+                'slug': 'verona-suede-driving-loafer',
+                'category': 'casual',
+                'collection': col_heritage,
+                'price': Decimal('20500.00'),
+                'original_price': Decimal('24000.00'),
+                'description': 'Handcrafted calf split-suede driving shoe featuring flexible pebble-rubber nubs and soft glove-leather lining.',
+                'is_best_seller': False,
+                'is_new_arrival': False,
+                'stock_count': 3,
+                'rating': Decimal('4.8'),
+                'review_count': 19,
+                'sizes': [40, 41, 42, 43, 44]
+            },
+            {
+                'name': 'Milano Chelsea Boot Obsidian',
+                'slug': 'milano-chelsea-boot-obsidian',
+                'category': 'men',
+                'collection': col_sovereign,
+                'price': Decimal('27500.00'),
+                'original_price': Decimal('32000.00'),
+                'description': 'Full-grain Italian box calf Chelsea boot with bevelled welt and custom storm-welt rubber sole. Atelier edition currently sold out.',
+                'is_best_seller': False,
+                'is_new_arrival': False,
+                'stock_count': 0,
+                'rating': Decimal('4.9'),
+                'review_count': 42,
+                'sizes': [41, 42, 43, 44]
+            },
+            {
+                'name': 'Sovereign High-Top Noir',
+                'slug': 'sovereign-high-top-noir',
+                'category': 'sneakers',
+                'collection': col_sovereign,
+                'price': Decimal('26000.00'),
+                'original_price': Decimal('30000.00'),
+                'description': 'Sculpted high-top luxury streetwear sneaker featuring padded collar, calfskin tonal overlays, and architectural cupsole.',
+                'is_best_seller': False,
+                'is_new_arrival': True,
+                'stock_count': 8,
+                'rating': Decimal('4.9'),
+                'review_count': 15,
+                'sizes': [40, 41, 42, 43, 44, 45]
+            },
+            {
+                'name': 'Stellar Knit Runner Sand',
+                'slug': 'stellar-knit-runner-sand',
+                'category': 'women',
+                'collection': col_sovereign,
+                'price': Decimal('19200.00'),
+                'original_price': Decimal('22500.00'),
+                'description': 'Engineered breathable knit upper infused with silk yarn accents and plush responsive foam bed for all-day elegance.',
+                'is_best_seller': False,
+                'is_new_arrival': True,
+                'stock_count': 11,
+                'rating': Decimal('4.8'),
+                'review_count': 23,
+                'sizes': [36, 37, 38, 39, 40]
             }
         ]
 

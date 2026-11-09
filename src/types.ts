@@ -2,13 +2,13 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: 'men' | 'women' | 'sneakers' | 'casual';
-  price: number;
+  category: string; // 'men' | 'women' | 'sneakers' | 'casual' or custom category
+  price: number; // in PKR
   originalPrice?: number;
   description: string;
   details: string[];
   images: string[];
-  sizes: number[];
+  sizes: number[]; // e.g. [39, 40, 41, 42, 43, 44, 45]
   colors: string[];
   inStock: boolean;
   stockCount: number;
@@ -63,7 +63,7 @@ export interface PaymentDetails {
 
 export interface Order {
   id: string;
-  orderNumber: string;
+  orderNumber: string; // e.g. 19BK-2026-8491
   userId?: string;
   customer: {
     fullName: string;
@@ -76,6 +76,8 @@ export interface Order {
   };
   items: OrderItem[];
   subtotal: number;
+  discountAmount?: number;
+  couponCode?: string;
   shipping: number;
   total: number;
   payment: PaymentDetails;
@@ -98,6 +100,63 @@ export interface ContactMessage {
   createdAt: string;
 }
 
+export interface Collection {
+  id: string;
+  title: string;
+  slug: string;
+  subtitle: string;
+  description: string;
+  image: string;
+  tag: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed'; // percentage or fixed PKR
+  discountValue: number; // e.g. 10 (%) or 2000 (PKR)
+  minPurchase: number; // minimum cart subtotal required
+  isActive: boolean;
+  usageCount: number;
+  expiryDate?: string;
+}
+
+export interface SiteSettings {
+  announcementText: string;
+  heroTag: string;
+  heroTitle: string;
+  heroDescription: string;
+  heroImage: string;
+  heroFeaturedModelName: string;
+  heroFeaturedModelPrice: number;
+  freeShippingThreshold: number; // e.g. 15000 PKR
+  standardShippingFee: number; // e.g. 250 PKR
+  supportPhone: string;
+  supportEmail: string;
+  whatsappNumber: string;
+  jazzcashAccountTitle: string;
+  jazzcashAccountNumber: string;
+}
+
+export interface CustomerSummary {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  city: string;
+  totalOrders: number;
+  totalSpent: number;
+  lastOrderDate: string;
+  role: 'customer' | 'admin';
+}
+
 export interface AdminStats {
   totalRevenue: number;
   totalOrders: number;
@@ -106,4 +165,7 @@ export interface AdminStats {
   pendingOrders: number;
   pendingVerifications: number;
   lowStockCount: number;
+  outOfStockCount: number;
+  estimatedProfit: number;
+  averageOrderValue: number;
 }

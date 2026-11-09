@@ -4,49 +4,10 @@ import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, ShieldCheck, Sparkles, Feather, Clock } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
-  const { products, setCurrentPage, setSelectedCollection, viewProduct } = useShop();
+  const { products, setCurrentPage, setSelectedCollection, viewProduct, siteSettings, collections, formatPKR } = useShop();
 
   const bestSellers = products.filter(p => p.isBestSeller).slice(0, 3);
   const newArrivals = products.filter(p => p.isNewArrival).slice(0, 3);
-
-  const collections = [
-    {
-      title: "Men's Collection",
-      tag: "men",
-      subtitle: "Architectural silhouettes & calfskin leather",
-      image: "/src/assets/images/product_men_sneaker_1794183121675.jpg"
-    },
-    {
-      title: "Women's Collection",
-      tag: "women",
-      subtitle: "Featherlight runners & champagne tones",
-      image: "/src/assets/images/product_women_runner_1794183121544.jpg"
-    },
-    {
-      title: "Designer Sneakers",
-      tag: "sneakers",
-      subtitle: "Contemporary sculptural luxury street style",
-      image: "/src/assets/images/hero_luxury_sneaker_1794183121618.jpg"
-    },
-    {
-      title: "Casual & Hybrids",
-      tag: "casual",
-      subtitle: "Hand-burnished leather & sneaker comfort",
-      image: "/src/assets/images/product_casual_loafers_1794183123383.jpg"
-    },
-    {
-      title: "New Arrivals",
-      tag: "newarrivals",
-      subtitle: "Limited-edition artisan releases",
-      image: "/src/assets/images/product_men_sneaker_1794183121675.jpg"
-    },
-    {
-      title: "Best Sellers",
-      tag: "bestsellers",
-      subtitle: "Most coveted footwear silhouettes",
-      image: "/src/assets/images/product_women_runner_1794183121544.jpg"
-    }
-  ];
 
   return (
     <div className="space-y-24 pb-20">
@@ -60,15 +21,15 @@ export const HomePage: React.FC = () => {
             <div className="lg:col-span-6 space-y-6 z-10">
               <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[#D8C7AE] font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>The 2026 Sovereign Edition</span>
+                <span>{siteSettings?.heroTag || 'The 2026 Sovereign Edition'}</span>
               </div>
 
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif-luxury font-bold leading-[1.1] tracking-tight [text-wrap:balance]">
-                STEP INTO YOUR STYLE.
+                {siteSettings?.heroTitle || 'STEP INTO YOUR STYLE.'}
               </h1>
 
               <p className="text-base sm:text-lg text-neutral-300 font-light max-w-xl leading-relaxed">
-                Discover the perfect balance of modern design, everyday comfort, and timeless style. Handcrafted with imported leathers for the discerning connoisseur.
+                {siteSettings?.heroDescription || 'Discover the perfect balance of modern design, everyday comfort, and timeless style. Handcrafted with imported leathers for the discerning connoisseur.'}
               </p>
 
               {/* Action Buttons */}
@@ -109,19 +70,24 @@ export const HomePage: React.FC = () => {
             <div className="lg:col-span-6 relative">
               <div className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] overflow-hidden shadow-2xl border border-white/10">
                 <img
-                  src="/src/assets/images/hero_luxury_sneaker_1794183121618.jpg"
+                  src={siteSettings?.heroImage || '/images/hero_luxury_sneaker_1794183121618.jpg'}
                   alt="19BeesKicks Sovereign Luxury Footwear"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
+                  onError={(e: any) => {
+                    e.currentTarget.src = '/images/hero_luxury_sneaker_1794183121618.jpg';
+                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between text-white text-xs">
                   <div>
                     <span className="text-[10px] uppercase tracking-widest text-[#D8C7AE] block">Featured Model</span>
-                    <span className="font-serif-luxury font-bold text-sm">Aethel Travertine Runner</span>
+                    <span className="font-serif-luxury font-bold text-sm">
+                      {siteSettings?.heroFeaturedModelName || 'Aethel Travertine Runner'}
+                    </span>
                   </div>
                   <span className="font-mono text-sm font-bold bg-[#111111]/80 backdrop-blur-sm px-2.5 py-1 border border-white/20">
-                    PKR 24,500
+                    {formatPKR(siteSettings?.heroFeaturedModelPrice || 24500)}
                   </span>
                 </div>
               </div>

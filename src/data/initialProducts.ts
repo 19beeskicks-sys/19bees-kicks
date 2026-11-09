@@ -17,8 +17,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Handcrafted finish in Pakistan with imported materials'
     ],
     images: [
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_men_sneaker_1794183121675.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [40, 41, 42, 43, 44, 45],
     colors: ['Obsidian Black', 'Chalk White'],
@@ -46,8 +46,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Precision stitched sole border'
     ],
     images: [
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg',
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg'
+      '/images/hero_luxury_sneaker_1794183121618.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
     ],
     sizes: [39, 40, 41, 42, 43, 44],
     colors: ['Travertine Sand & Black', 'Monochrome Charcoal'],
@@ -75,8 +75,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Subtle debossed gold foil signature'
     ],
     images: [
-      '/src/assets/images/product_women_runner_1794183121544.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_women_runner_1794183121544.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [36, 37, 38, 39, 40, 41],
     colors: ['Champagne Cream', 'Pearl White', 'Rose Dust'],
@@ -104,8 +104,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Made by master artisans with over 20 years experience'
     ],
     images: [
-      '/src/assets/images/product_casual_loafers_1794183123383.jpg',
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg'
+      '/images/product_casual_loafers_1794183123383.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
     ],
     sizes: [40, 41, 42, 43, 44, 45],
     colors: ['Caramel Tan', 'Espresso Dark Brown'],
@@ -133,8 +133,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Reinforced double-stitched stress zones'
     ],
     images: [
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_men_sneaker_1794183121675.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [39, 40, 41, 42, 43, 44],
     colors: ['Off-White & Beige', 'Triple White'],
@@ -162,8 +162,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       'Antibacterial microfiber lining'
     ],
     images: [
-      '/src/assets/images/product_women_runner_1794183121544.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_women_runner_1794183121544.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [37, 38, 39, 40, 41],
     colors: ['Desert Sand', 'Ivory Cream'],
@@ -174,5 +174,117 @@ export const INITIAL_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewCount: 31,
     createdAt: '2026-02-18T14:20:00.000Z'
+  },
+  {
+    id: 'prod-7',
+    name: 'Milano Chelsea Hybrid Tan',
+    slug: 'milano-chelsea-hybrid-tan',
+    category: 'casual',
+    price: 26500,
+    originalPrice: 31000,
+    description: 'Artisanal ankle boot silhouette crafted in burnished honey tan calfskin with elasticated gusset and performance sneaker sole. A true runway statement piece.',
+    details: [
+      'Hand-waxed burnished honey tan calf leather',
+      'Heavy-duty ribbed elastic lateral gussets',
+      'Debossed pull-tabs with brass rivet accents',
+      'Lugged dual-density hybrid walking sole'
+    ],
+    images: [
+      '/images/product_casual_loafers_1794183123383.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
+    ],
+    sizes: [40, 41, 42, 43, 44],
+    colors: ['Honey Tan', 'Deep Chocolate'],
+    inStock: false,
+    stockCount: 0, // Demonstrates SOLD OUT state
+    isBestSeller: true,
+    isNewArrival: false,
+    rating: 5.0,
+    reviewCount: 68,
+    createdAt: '2026-01-05T08:00:00.000Z'
+  },
+  {
+    id: 'prod-8',
+    name: 'Verona Suede Derby Trainer',
+    slug: 'verona-suede-derby-trainer',
+    category: 'men',
+    price: 17900,
+    originalPrice: 21000,
+    description: 'Supple English suede derby upper merged with an ultra-lightweight court cupsole. Versatile styling for both bespoke tailored trousers and denim.',
+    details: [
+      'Velvety water-repellent suede upper',
+      'Supple calfskin glove inner lining',
+      'Shock-absorbing crepe-textured rubber sole',
+      'Waxed round laces'
+    ],
+    images: [
+      '/images/product_men_sneaker_1794183121675.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
+    ],
+    sizes: [40, 41, 42, 43],
+    colors: ['Espresso Suede', 'Taupe Sand'],
+    inStock: true,
+    stockCount: 3, // Low stock alert demo
+    isBestSeller: false,
+    isNewArrival: true,
+    rating: 4.8,
+    reviewCount: 19,
+    createdAt: '2026-02-25T11:00:00.000Z'
+  },
+  {
+    id: 'prod-9',
+    name: 'Celestia Metallic Rose Runner',
+    slug: 'celestia-metallic-rose-runner',
+    category: 'women',
+    price: 23400,
+    originalPrice: 27500,
+    description: 'Subtle rose-gold metallic leather accents framing soft ivory suede panelling. Engineered with featherlight kinetic return footbed technology.',
+    details: [
+      'Italian metallic glazed leather highlights',
+      'Perforated toe-vamp for climate control',
+      'Reinforced heel TPU stabilizer clip',
+      'Custom gold aglet luxury lacing'
+    ],
+    images: [
+      '/images/product_women_runner_1794183121544.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
+    ],
+    sizes: [36, 37, 38, 39, 40],
+    colors: ['Rose Gold & Chalk', 'Pure Platinum'],
+    inStock: true,
+    stockCount: 7,
+    isBestSeller: false,
+    isNewArrival: true,
+    rating: 4.9,
+    reviewCount: 15,
+    createdAt: '2026-03-02T13:10:00.000Z'
+  },
+  {
+    id: 'prod-10',
+    name: 'Valerio Minimalist Court Obsidian',
+    slug: 'valerio-minimalist-court-obsidian',
+    category: 'sneakers',
+    price: 15500,
+    originalPrice: 18000,
+    description: 'Sleek monochromatic court silhouette with clean stitchwork and gold foil serial stamp. Designed for effortless understated luxury.',
+    details: [
+      'Smooth matte nappa leather upper',
+      'Discreet gold embossed branding',
+      'High-traction gum rubber sole',
+      'Comfort-padded collar'
+    ],
+    images: [
+      '/images/hero_luxury_sneaker_1794183121618.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
+    ],
+    sizes: [39, 40, 41, 42, 43, 44, 45],
+    colors: ['Triple Black', 'Black & Chalk'],
+    inStock: true,
+    stockCount: 11,
+    isBestSeller: false,
+    isNewArrival: false,
+    rating: 4.7,
+    reviewCount: 24,
+    createdAt: '2026-01-25T16:40:00.000Z'
   }
 ];

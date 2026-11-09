@@ -5,7 +5,7 @@ export interface Product {
   id: string;
   name: string;
   slug: string;
-  category: 'men' | 'women' | 'sneakers' | 'casual';
+  category: string;
   price: number; // in PKR
   originalPrice?: number;
   description: string;
@@ -73,6 +73,8 @@ export interface Order {
   };
   items: OrderItem[];
   subtotal: number;
+  discountAmount?: number;
+  couponCode?: string;
   shipping: number;
   total: number;
   payment: PaymentDetails;
@@ -101,12 +103,61 @@ export interface NewsletterSubscriber {
   createdAt: string;
 }
 
+export interface Collection {
+  id: string;
+  title: string;
+  slug: string;
+  subtitle: string;
+  description: string;
+  image: string;
+  tag: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+}
+
+export interface Coupon {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  minPurchase: number;
+  isActive: boolean;
+  usageCount: number;
+  expiryDate?: string;
+}
+
+export interface SiteSettings {
+  announcementText: string;
+  heroTag: string;
+  heroTitle: string;
+  heroDescription: string;
+  heroImage: string;
+  heroFeaturedModelName: string;
+  heroFeaturedModelPrice: number;
+  freeShippingThreshold: number;
+  standardShippingFee: number;
+  supportPhone: string;
+  supportEmail: string;
+  whatsappNumber: string;
+  jazzcashAccountTitle: string;
+  jazzcashAccountNumber: string;
+}
+
 export interface DatabaseSchema {
   products: Product[];
   users: User[];
   orders: Order[];
   contactMessages: ContactMessage[];
   newsletterSubscribers: NewsletterSubscriber[];
+  collections: Collection[];
+  categories: Category[];
+  coupons: Coupon[];
+  siteSettings: SiteSettings;
 }
 
 const DB_DIR = path.resolve(process.cwd(), 'data');
@@ -129,8 +180,8 @@ const INITIAL_PRODUCTS: Product[] = [
       'Handcrafted finish in Pakistan with imported materials'
     ],
     images: [
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_men_sneaker_1794183121675.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [40, 41, 42, 43, 44, 45],
     colors: ['Obsidian Black', 'Chalk White'],
@@ -158,8 +209,8 @@ const INITIAL_PRODUCTS: Product[] = [
       'Precision stitched sole border'
     ],
     images: [
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg',
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg'
+      '/images/hero_luxury_sneaker_1794183121618.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
     ],
     sizes: [39, 40, 41, 42, 43, 44],
     colors: ['Travertine Sand & Black', 'Monochrome Charcoal'],
@@ -187,8 +238,8 @@ const INITIAL_PRODUCTS: Product[] = [
       'Subtle debossed gold foil signature'
     ],
     images: [
-      '/src/assets/images/product_women_runner_1794183121544.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_women_runner_1794183121544.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [36, 37, 38, 39, 40, 41],
     colors: ['Champagne Cream', 'Pearl White', 'Rose Dust'],
@@ -216,8 +267,8 @@ const INITIAL_PRODUCTS: Product[] = [
       'Made by master artisans with over 20 years experience'
     ],
     images: [
-      '/src/assets/images/product_casual_loafers_1794183123383.jpg',
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg'
+      '/images/product_casual_loafers_1794183123383.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
     ],
     sizes: [40, 41, 42, 43, 44, 45],
     colors: ['Caramel Tan', 'Espresso Dark Brown'],
@@ -245,8 +296,8 @@ const INITIAL_PRODUCTS: Product[] = [
       'Reinforced double-stitched stress zones'
     ],
     images: [
-      '/src/assets/images/product_men_sneaker_1794183121675.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_men_sneaker_1794183121675.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [39, 40, 41, 42, 43, 44],
     colors: ['Off-White & Beige', 'Triple White'],
@@ -274,8 +325,8 @@ const INITIAL_PRODUCTS: Product[] = [
       'Antibacterial microfiber lining'
     ],
     images: [
-      '/src/assets/images/product_women_runner_1794183121544.jpg',
-      '/src/assets/images/hero_luxury_sneaker_1794183121618.jpg'
+      '/images/product_women_runner_1794183121544.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
     ],
     sizes: [37, 38, 39, 40, 41],
     colors: ['Desert Sand', 'Ivory Cream'],
@@ -286,6 +337,118 @@ const INITIAL_PRODUCTS: Product[] = [
     rating: 4.9,
     reviewCount: 31,
     createdAt: '2026-02-18T14:20:00.000Z'
+  },
+  {
+    id: 'prod-7',
+    name: 'Milano Chelsea Hybrid Tan',
+    slug: 'milano-chelsea-hybrid-tan',
+    category: 'casual',
+    price: 26500,
+    originalPrice: 31000,
+    description: 'Artisanal ankle boot silhouette crafted in burnished honey tan calfskin with elasticated gusset and performance sneaker sole. A true runway statement piece.',
+    details: [
+      'Hand-waxed burnished honey tan calf leather',
+      'Heavy-duty ribbed elastic lateral gussets',
+      'Debossed pull-tabs with brass rivet accents',
+      'Lugged dual-density hybrid walking sole'
+    ],
+    images: [
+      '/images/product_casual_loafers_1794183123383.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
+    ],
+    sizes: [40, 41, 42, 43, 44],
+    colors: ['Honey Tan', 'Deep Chocolate'],
+    inStock: false,
+    stockCount: 0, // Demonstrates SOLD OUT state
+    isBestSeller: true,
+    isNewArrival: false,
+    rating: 5.0,
+    reviewCount: 68,
+    createdAt: '2026-01-05T08:00:00.000Z'
+  },
+  {
+    id: 'prod-8',
+    name: 'Verona Suede Derby Trainer',
+    slug: 'verona-suede-derby-trainer',
+    category: 'men',
+    price: 17900,
+    originalPrice: 21000,
+    description: 'Supple English suede derby upper merged with an ultra-lightweight court cupsole. Versatile styling for both bespoke tailored trousers and denim.',
+    details: [
+      'Velvety water-repellent suede upper',
+      'Supple calfskin glove inner lining',
+      'Shock-absorbing crepe-textured rubber sole',
+      'Waxed round laces'
+    ],
+    images: [
+      '/images/product_men_sneaker_1794183121675.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
+    ],
+    sizes: [40, 41, 42, 43],
+    colors: ['Espresso Suede', 'Taupe Sand'],
+    inStock: true,
+    stockCount: 3, // Low stock alert demo
+    isBestSeller: false,
+    isNewArrival: true,
+    rating: 4.8,
+    reviewCount: 19,
+    createdAt: '2026-02-25T11:00:00.000Z'
+  },
+  {
+    id: 'prod-9',
+    name: 'Celestia Metallic Rose Runner',
+    slug: 'celestia-metallic-rose-runner',
+    category: 'women',
+    price: 23400,
+    originalPrice: 27500,
+    description: 'Subtle rose-gold metallic leather accents framing soft ivory suede panelling. Engineered with featherlight kinetic return footbed technology.',
+    details: [
+      'Italian metallic glazed leather highlights',
+      'Perforated toe-vamp for climate control',
+      'Reinforced heel TPU stabilizer clip',
+      'Custom gold aglet luxury lacing'
+    ],
+    images: [
+      '/images/product_women_runner_1794183121544.jpg',
+      '/images/hero_luxury_sneaker_1794183121618.jpg'
+    ],
+    sizes: [36, 37, 38, 39, 40],
+    colors: ['Rose Gold & Chalk', 'Pure Platinum'],
+    inStock: true,
+    stockCount: 7,
+    isBestSeller: false,
+    isNewArrival: true,
+    rating: 4.9,
+    reviewCount: 15,
+    createdAt: '2026-03-02T13:10:00.000Z'
+  },
+  {
+    id: 'prod-10',
+    name: 'Valerio Minimalist Court Obsidian',
+    slug: 'valerio-minimalist-court-obsidian',
+    category: 'sneakers',
+    price: 15500,
+    originalPrice: 18000,
+    description: 'Sleek monochromatic court silhouette with clean stitchwork and gold foil serial stamp. Designed for effortless understated luxury.',
+    details: [
+      'Smooth matte nappa leather upper',
+      'Discreet gold embossed branding',
+      'High-traction gum rubber sole',
+      'Comfort-padded collar'
+    ],
+    images: [
+      '/images/hero_luxury_sneaker_1794183121618.jpg',
+      '/images/product_men_sneaker_1794183121675.jpg'
+    ],
+    sizes: [39, 40, 41, 42, 43, 44, 45],
+    colors: ['Triple Black', 'Black & Chalk'],
+    inStock: true,
+    stockCount: 11,
+    isBestSeller: false,
+    isNewArrival: false,
+    rating: 4.7,
+    reviewCount: 24,
+    createdAt: '2026-01-25T16:40:00.000Z'
   }
 ];
 
@@ -295,7 +458,7 @@ const INITIAL_USERS: User[] = [
     name: '19Bees Admin',
     email: 'admin@19beeskicks.com',
     phone: '+92 328 2158299',
-    passwordHash: 'admin123', // In demo full-stack mode, validated securely
+    passwordHash: 'admin123',
     role: 'admin',
     createdAt: '2026-01-01T00:00:00.000Z'
   },
@@ -346,7 +509,7 @@ const INITIAL_ORDERS: Order[] = [
         size: 42,
         color: 'Obsidian Black',
         quantity: 1,
-        image: '/src/assets/images/product_men_sneaker_1794183121675.jpg'
+        image: '/images/product_men_sneaker_1794183121675.jpg'
       }
     ],
     subtotal: 18500,
@@ -394,7 +557,7 @@ const INITIAL_ORDERS: Order[] = [
         size: 38,
         color: 'Champagne Cream',
         quantity: 1,
-        image: '/src/assets/images/product_women_runner_1794183121544.jpg'
+        image: '/images/product_women_runner_1794183121544.jpg'
       }
     ],
     subtotal: 19800,
@@ -427,6 +590,93 @@ const INITIAL_ORDERS: Order[] = [
   }
 ];
 
+const INITIAL_COLLECTIONS: Collection[] = [
+  {
+    id: 'col-1',
+    title: "Men's Collection",
+    slug: 'men',
+    tag: 'men',
+    subtitle: 'Architectural silhouettes & calfskin leather',
+    description: 'Impeccable craftsmanship and Italian leather tailoring for the modern gentleman.',
+    image: '/images/product_men_sneaker_1794183121675.jpg'
+  },
+  {
+    id: 'col-2',
+    title: "Women's Collection",
+    slug: 'women',
+    tag: 'women',
+    subtitle: 'Featherlight runners & champagne tones',
+    description: 'Ultra-refined feminine luxury designed for comfort and elevated daily presence.',
+    image: '/images/product_women_runner_1794183121544.jpg'
+  },
+  {
+    id: 'col-3',
+    title: 'Designer Sneakers',
+    slug: 'sneakers',
+    tag: 'sneakers',
+    subtitle: 'Contemporary sculptural luxury street style',
+    description: 'Avant-garde platform soles and contrasting texture panelling.',
+    image: '/images/hero_luxury_sneaker_1794183121618.jpg'
+  },
+  {
+    id: 'col-4',
+    title: 'Casual & Hybrids',
+    slug: 'casual',
+    tag: 'casual',
+    subtitle: 'Hand-burnished leather & sneaker comfort',
+    description: 'Blake-stitched loafers blended seamlessly with shock-absorbing sneaker treads.',
+    image: '/images/product_casual_loafers_1794183123383.jpg'
+  },
+  {
+    id: 'col-5',
+    title: 'New Arrivals',
+    slug: 'newarrivals',
+    tag: 'newarrivals',
+    subtitle: 'Limited-edition artisan releases',
+    description: 'The newest handcrafted releases fresh from the 19Bees atelier.',
+    image: '/images/product_men_sneaker_1794183121675.jpg'
+  },
+  {
+    id: 'col-6',
+    title: 'Best Sellers',
+    slug: 'bestsellers',
+    tag: 'bestsellers',
+    subtitle: 'Most coveted footwear silhouettes',
+    description: 'Our most sought-after shoes celebrated for unmatched comfort and style.',
+    image: '/images/product_women_runner_1794183121544.jpg'
+  }
+];
+
+const INITIAL_CATEGORIES: Category[] = [
+  { id: 'cat-1', name: "Men's Footwear", slug: 'men', description: 'Handcrafted luxury sneakers, dress hybrids, and boots for men.' },
+  { id: 'cat-2', name: "Women's Footwear", slug: 'women', description: 'Featherlight runners, designer luxury trainers, and slip-ons for women.' },
+  { id: 'cat-3', name: 'Designer Sneakers', slug: 'sneakers', description: 'High-end streetwear and sculpted statement sneaker silhouettes.' },
+  { id: 'cat-4', name: 'Casual & Loafers', slug: 'casual', description: 'Burnished calfskin casual shoes and hybrid walking loafers.' }
+];
+
+const INITIAL_COUPONS: Coupon[] = [
+  { id: 'cp-1', code: 'WELCOME10', discountType: 'percentage', discountValue: 10, minPurchase: 10000, isActive: true, usageCount: 14 },
+  { id: 'cp-2', code: 'BEES2000', discountType: 'fixed', discountValue: 2000, minPurchase: 20000, isActive: true, usageCount: 8 },
+  { id: 'cp-3', code: 'VIP15', discountType: 'percentage', discountValue: 15, minPurchase: 30000, isActive: true, usageCount: 5 }
+];
+
+const INITIAL_SETTINGS: SiteSettings = {
+  announcementText: 'Complimentary Express Shipping Across Pakistan On Orders Over PKR 15,000',
+  heroTag: 'The 2026 Sovereign Edition',
+  heroTitle: 'STEP INTO YOUR STYLE.',
+  heroDescription: 'Discover the perfect balance of modern design, everyday comfort, and timeless style. Handcrafted with imported leathers for the discerning connoisseur.',
+  heroImage: '/images/hero_luxury_sneaker_1794183121618.jpg',
+  heroFeaturedModelName: 'Aethel Travertine Runner',
+  heroFeaturedModelPrice: 24500,
+  freeShippingThreshold: 15000,
+  standardShippingFee: 250,
+  supportPhone: '+92 328 2158299',
+  supportEmail: '19beeskicks@gmail.com',
+  whatsappNumber: '+92 328 2158299',
+  jazzcashAccountTitle: 'Abdul Samad',
+  jazzcashAccountNumber: '03238917805'
+};
+
 export class Database {
   private data: DatabaseSchema;
 
@@ -441,7 +691,22 @@ export class Database {
       }
       if (fs.existsSync(DB_FILE)) {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        // Ensure new schema collections exist
+        let changed = false;
+        if (!parsed.collections) { parsed.collections = INITIAL_COLLECTIONS; changed = true; }
+        if (!parsed.categories) { parsed.categories = INITIAL_CATEGORIES; changed = true; }
+        if (!parsed.coupons) { parsed.coupons = INITIAL_COUPONS; changed = true; }
+        if (!parsed.siteSettings) { parsed.siteSettings = INITIAL_SETTINGS; changed = true; }
+        // Merge in any new sample products if less than 7 exist
+        if (!parsed.products || parsed.products.length < 7) {
+          parsed.products = INITIAL_PRODUCTS;
+          changed = true;
+        }
+        if (changed) {
+          this.save(parsed);
+        }
+        return parsed;
       }
     } catch (err) {
       console.error('Error reading database file, initializing fresh:', err);
@@ -452,7 +717,11 @@ export class Database {
       users: INITIAL_USERS,
       orders: INITIAL_ORDERS,
       contactMessages: [],
-      newsletterSubscribers: []
+      newsletterSubscribers: [],
+      collections: INITIAL_COLLECTIONS,
+      categories: INITIAL_CATEGORIES,
+      coupons: INITIAL_COUPONS,
+      siteSettings: INITIAL_SETTINGS
     };
     this.save(initial);
     return initial;
@@ -469,7 +738,7 @@ export class Database {
     }
   }
 
-  // Products
+  // ---------------- PRODUCTS ----------------
   getProducts(): Product[] {
     return this.data.products;
   }
@@ -487,7 +756,24 @@ export class Database {
   updateProduct(id: string, updates: Partial<Product>): Product | null {
     const idx = this.data.products.findIndex(p => p.id === id);
     if (idx === -1) return null;
-    this.data.products[idx] = { ...this.data.products[idx], ...updates };
+    const current = this.data.products[idx];
+    const updated = { ...current, ...updates };
+    // Automatically update inStock based on stockCount
+    if (updated.stockCount !== undefined) {
+      updated.stockCount = Number(updated.stockCount);
+      updated.inStock = updated.stockCount > 0;
+    }
+    this.data.products[idx] = updated;
+    this.save();
+    return updated;
+  }
+
+  updateProductStock(id: string, newStock: number): Product | null {
+    const idx = this.data.products.findIndex(p => p.id === id);
+    if (idx === -1) return null;
+    const stock = Math.max(0, Number(newStock));
+    this.data.products[idx].stockCount = stock;
+    this.data.products[idx].inStock = stock > 0;
     this.save();
     return this.data.products[idx];
   }
@@ -502,7 +788,137 @@ export class Database {
     return false;
   }
 
-  // Users
+  // ---------------- COLLECTIONS ----------------
+  getCollections(): Collection[] {
+    return this.data.collections || INITIAL_COLLECTIONS;
+  }
+
+  addCollection(col: Collection): Collection {
+    if (!this.data.collections) this.data.collections = [];
+    this.data.collections.push(col);
+    this.save();
+    return col;
+  }
+
+  updateCollection(id: string, updates: Partial<Collection>): Collection | null {
+    if (!this.data.collections) this.data.collections = INITIAL_COLLECTIONS;
+    const idx = this.data.collections.findIndex(c => c.id === id || c.slug === id);
+    if (idx === -1) return null;
+    this.data.collections[idx] = { ...this.data.collections[idx], ...updates };
+    this.save();
+    return this.data.collections[idx];
+  }
+
+  deleteCollection(id: string): boolean {
+    if (!this.data.collections) return false;
+    const initial = this.data.collections.length;
+    this.data.collections = this.data.collections.filter(c => c.id !== id && c.slug !== id);
+    if (this.data.collections.length !== initial) {
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  // ---------------- CATEGORIES ----------------
+  getCategories(): Category[] {
+    return this.data.categories || INITIAL_CATEGORIES;
+  }
+
+  addCategory(cat: Category): Category {
+    if (!this.data.categories) this.data.categories = [];
+    this.data.categories.push(cat);
+    this.save();
+    return cat;
+  }
+
+  updateCategory(id: string, updates: Partial<Category>): Category | null {
+    if (!this.data.categories) this.data.categories = INITIAL_CATEGORIES;
+    const idx = this.data.categories.findIndex(c => c.id === id || c.slug === id);
+    if (idx === -1) return null;
+    this.data.categories[idx] = { ...this.data.categories[idx], ...updates };
+    this.save();
+    return this.data.categories[idx];
+  }
+
+  deleteCategory(id: string): boolean {
+    if (!this.data.categories) return false;
+    const initial = this.data.categories.length;
+    this.data.categories = this.data.categories.filter(c => c.id !== id && c.slug !== id);
+    if (this.data.categories.length !== initial) {
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  // ---------------- COUPONS ----------------
+  getCoupons(): Coupon[] {
+    return this.data.coupons || INITIAL_COUPONS;
+  }
+
+  addCoupon(coupon: Coupon): Coupon {
+    if (!this.data.coupons) this.data.coupons = [];
+    this.data.coupons.unshift(coupon);
+    this.save();
+    return coupon;
+  }
+
+  updateCoupon(id: string, updates: Partial<Coupon>): Coupon | null {
+    if (!this.data.coupons) this.data.coupons = INITIAL_COUPONS;
+    const idx = this.data.coupons.findIndex(c => c.id === id || c.code.toUpperCase() === id.toUpperCase());
+    if (idx === -1) return null;
+    this.data.coupons[idx] = { ...this.data.coupons[idx], ...updates };
+    this.save();
+    return this.data.coupons[idx];
+  }
+
+  deleteCoupon(id: string): boolean {
+    if (!this.data.coupons) return false;
+    const initial = this.data.coupons.length;
+    this.data.coupons = this.data.coupons.filter(c => c.id !== id && c.code !== id);
+    if (this.data.coupons.length !== initial) {
+      this.save();
+      return true;
+    }
+    return false;
+  }
+
+  validateCoupon(code: string, subtotal: number): { valid: boolean; discount: number; message: string; coupon?: Coupon } {
+    const list = this.getCoupons();
+    const coupon = list.find(c => c.code.toUpperCase() === code.toUpperCase().trim());
+    if (!coupon) {
+      return { valid: false, discount: 0, message: 'Invalid coupon code' };
+    }
+    if (!coupon.isActive) {
+      return { valid: false, discount: 0, message: 'This coupon code is currently inactive' };
+    }
+    if (subtotal < coupon.minPurchase) {
+      return { valid: false, discount: 0, message: `Minimum purchase of PKR ${coupon.minPurchase.toLocaleString()} required for this coupon` };
+    }
+
+    let discount = 0;
+    if (coupon.discountType === 'percentage') {
+      discount = Math.round((subtotal * coupon.discountValue) / 100);
+    } else {
+      discount = Math.min(coupon.discountValue, subtotal);
+    }
+
+    return { valid: true, discount, message: `Coupon applied: Saved PKR ${discount.toLocaleString()}`, coupon };
+  }
+
+  // ---------------- SITE SETTINGS ----------------
+  getSiteSettings(): SiteSettings {
+    return this.data.siteSettings || INITIAL_SETTINGS;
+  }
+
+  updateSiteSettings(settings: Partial<SiteSettings>): SiteSettings {
+    this.data.siteSettings = { ...(this.data.siteSettings || INITIAL_SETTINGS), ...settings };
+    this.save();
+    return this.data.siteSettings;
+  }
+
+  // ---------------- USERS & CUSTOMERS ----------------
   getUserByEmail(email: string): User | undefined {
     return this.data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
   }
@@ -517,15 +933,56 @@ export class Database {
     return user;
   }
 
-  updateUser(id: string, updates: Partial<User>): User | null {
-    const idx = this.data.users.findIndex(u => u.id === id);
-    if (idx === -1) return null;
-    this.data.users[idx] = { ...this.data.users[idx], ...updates };
-    this.save();
-    return this.data.users[idx];
+  getCustomersList(): any[] {
+    const customersMap = new Map<string, any>();
+
+    // 1. Registered users
+    for (const u of this.data.users) {
+      if (u.role === 'admin') continue;
+      customersMap.set(u.email.toLowerCase(), {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        city: u.address?.city || 'Pakistan',
+        totalOrders: 0,
+        totalSpent: 0,
+        lastOrderDate: u.createdAt,
+        registered: true
+      });
+    }
+
+    // 2. Aggregate orders
+    for (const o of this.data.orders) {
+      const email = o.customer.email.toLowerCase();
+      let record = customersMap.get(email);
+      if (!record) {
+        record = {
+          id: o.userId || `cust-${Date.now()}`,
+          name: o.customer.fullName,
+          email: o.customer.email,
+          phone: o.customer.phone,
+          city: o.customer.city,
+          totalOrders: 0,
+          totalSpent: 0,
+          lastOrderDate: o.createdAt,
+          registered: false
+        };
+        customersMap.set(email, record);
+      }
+      record.totalOrders += 1;
+      if (o.status !== 'Cancelled') {
+        record.totalSpent += o.total;
+      }
+      if (new Date(o.createdAt) > new Date(record.lastOrderDate)) {
+        record.lastOrderDate = o.createdAt;
+      }
+    }
+
+    return Array.from(customersMap.values()).sort((a, b) => b.totalSpent - a.totalSpent);
   }
 
-  // Orders
+  // ---------------- ORDERS ----------------
   getOrders(): Order[] {
     return this.data.orders;
   }
@@ -535,18 +992,25 @@ export class Database {
   }
 
   getOrdersByUserId(userId: string): Order[] {
-    return this.data.orders.filter(o => o.userId === userId);
+    return this.data.orders.filter(o => o.userId === userId || o.customer.email.toLowerCase() === userId.toLowerCase());
   }
 
   createOrder(order: Order): Order {
     this.data.orders.unshift(order);
-    // Decrease stock count for ordered products
+    // Decrease stock count for ordered products and auto-mark sold out if zero
     for (const item of order.items) {
       const prod = this.getProductById(item.productId);
       if (prod) {
         prod.stockCount = Math.max(0, prod.stockCount - item.quantity);
-        if (prod.stockCount === 0) prod.inStock = false;
+        if (prod.stockCount === 0) {
+          prod.inStock = false;
+        }
       }
+    }
+    // Increment coupon usage count if coupon applied
+    if (order.couponCode) {
+      const c = this.data.coupons?.find(cp => cp.code.toUpperCase() === order.couponCode?.toUpperCase());
+      if (c) c.usageCount = (c.usageCount || 0) + 1;
     }
     this.save();
     return order;
@@ -576,7 +1040,7 @@ export class Database {
       order.statusHistory.push({
         status: 'Confirmed',
         timestamp: new Date().toISOString(),
-        note: `JazzCash payment verified: ${notes || 'Verified by Admin'}`
+        note: `Payment verified by Admin: ${notes || 'Funds confirmed received'}`
       });
     } else {
       order.statusHistory.push({
@@ -589,7 +1053,7 @@ export class Database {
     return order;
   }
 
-  // Contact
+  // ---------------- CONTACT & NEWSLETTER ----------------
   addContactMessage(msg: ContactMessage): ContactMessage {
     this.data.contactMessages.unshift(msg);
     this.save();
@@ -600,7 +1064,6 @@ export class Database {
     return this.data.contactMessages;
   }
 
-  // Newsletter
   addNewsletter(email: string): boolean {
     const exists = this.data.newsletterSubscribers.some(s => s.email.toLowerCase() === email.toLowerCase());
     if (exists) return false;
@@ -615,6 +1078,70 @@ export class Database {
 
   getNewsletterSubscribers(): NewsletterSubscriber[] {
     return this.data.newsletterSubscribers;
+  }
+
+  // ---------------- FINANCIAL & ANALYTICS ----------------
+  getFinancialAnalytics(): any {
+    const orders = this.data.orders;
+    const nonCancelled = orders.filter(o => o.status !== 'Cancelled');
+    const totalRevenue = nonCancelled.reduce((sum, o) => sum + o.total, 0);
+
+    // Estimated profit margin (42% luxury footwear gross margin calculation)
+    const estimatedCost = Math.round(totalRevenue * 0.58);
+    const estimatedProfit = Math.round(totalRevenue * 0.42);
+
+    const verifiedRevenue = nonCancelled
+      .filter(o => o.payment.status === 'verified' || o.status === 'Delivered')
+      .reduce((sum, o) => sum + o.total, 0);
+
+    const pendingRevenue = nonCancelled
+      .filter(o => o.payment.status === 'pending')
+      .reduce((sum, o) => sum + o.total, 0);
+
+    const averageOrderValue = nonCancelled.length > 0 ? Math.round(totalRevenue / nonCancelled.length) : 0;
+
+    // By payment method
+    const paymentBreakdown = {
+      jazzcash: orders.filter(o => o.payment.method === 'jazzcash').reduce((sum, o) => sum + o.total, 0),
+      easypaisa: orders.filter(o => o.payment.method === 'easypaisa').reduce((sum, o) => sum + o.total, 0),
+      cod: orders.filter(o => o.payment.method === 'cod').reduce((sum, o) => sum + o.total, 0),
+      bank_transfer: orders.filter(o => o.payment.method === 'bank_transfer').reduce((sum, o) => sum + o.total, 0)
+    };
+
+    // Product sales rank
+    const productSalesMap = new Map<string, { id: string; name: string; unitsSold: number; revenue: number; image: string }>();
+    for (const p of this.data.products) {
+      productSalesMap.set(p.id, { id: p.id, name: p.name, unitsSold: 0, revenue: 0, image: p.images[0] });
+    }
+    for (const o of nonCancelled) {
+      for (const item of o.items) {
+        let entry = productSalesMap.get(item.productId);
+        if (!entry) {
+          entry = { id: item.productId, name: item.productName, unitsSold: 0, revenue: 0, image: item.image };
+          productSalesMap.set(item.productId, entry);
+        }
+        entry.unitsSold += item.quantity;
+        entry.revenue += item.price * item.quantity;
+      }
+    }
+
+    const topSellingProducts = Array.from(productSalesMap.values())
+      .sort((a, b) => b.unitsSold - a.unitsSold)
+      .slice(0, 5);
+
+    return {
+      totalRevenue,
+      estimatedProfit,
+      estimatedCost,
+      verifiedRevenue,
+      pendingRevenue,
+      averageOrderValue,
+      totalOrdersCount: orders.length,
+      deliveredOrdersCount: orders.filter(o => o.status === 'Delivered').length,
+      pendingOrdersCount: orders.filter(o => o.status === 'Pending').length,
+      paymentBreakdown,
+      topSellingProducts
+    };
   }
 }
 
