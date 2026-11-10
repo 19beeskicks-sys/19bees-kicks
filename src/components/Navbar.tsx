@@ -41,18 +41,9 @@ export const Navbar: React.FC = () => {
         <span className="hidden sm:inline-block text-neutral-400">EVERY STEP. YOUR STYLE.</span>
         <span className="mx-auto font-medium">{siteSettings?.announcementText || 'Complimentary Express Shipping Across Pakistan On Orders Over PKR 15,000'}</span>
         <div className="flex items-center gap-3">
-          <a
-            href="/api/download-zip"
-            download="19BeesKicks-complete-project.zip"
-            className="text-[#D8C7AE] hover:underline cursor-pointer flex items-center gap-1 font-semibold"
-            title="Download full project source code as a ZIP archive"
-          >
-            <span>Download ZIP</span>
-          </a>
-          <span className="text-neutral-600 hidden sm:inline">|</span>
           <button
             onClick={() => setActiveTrackingOrder('open-tracker')}
-            className="hidden sm:inline-block text-neutral-300 hover:text-white hover:underline cursor-pointer"
+            className="hidden sm:inline-block text-neutral-300 hover:text-white hover:underline cursor-pointer font-medium"
           >
             Track Order
           </button>

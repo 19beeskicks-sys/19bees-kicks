@@ -109,7 +109,7 @@ export const ProductDetailPage: React.FC = () => {
         <div className="lg:col-span-7 space-y-4">
           <div className="aspect-[4/3] bg-[#EEEEEC] overflow-hidden border border-[#EEEEEC] relative">
             <img
-              src={product.images[activeImageIdx] || product.images[0]}
+              src={(product.images[activeImageIdx] || product.images[0])?.startsWith('/') ? `.${product.images[activeImageIdx] || product.images[0]}` : (product.images[activeImageIdx] || product.images[0])}
               alt={product.name}
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover object-center"
@@ -132,7 +132,7 @@ export const ProductDetailPage: React.FC = () => {
                     activeImageIdx === idx ? 'border-[#111111]' : 'border-transparent opacity-70 hover:opacity-100'
                   }`}
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  <img src={img?.startsWith('/') ? `.${img}` : img} alt="" className="w-full h-full object-cover" />
                 </button>
               ))}
             </div>

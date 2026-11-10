@@ -1,6 +1,7 @@
 import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import craftsmanshipImg from '../assets/images/craftsmanship_story_1794183122649.jpg';
 
 export const OurStoryPage: React.FC = () => {
   const { setCurrentPage } = useShop();
@@ -53,7 +54,7 @@ export const OurStoryPage: React.FC = () => {
           <div className="lg:col-span-6">
             <div className="aspect-[4/3] overflow-hidden border border-[#EEEEEC] shadow-xl">
               <img
-                src="/src/assets/images/craftsmanship_story_1794183122649.jpg"
+                src={craftsmanshipImg}
                 alt="Master artisan craftsman at 19BeesKicks workbench"
                 className="w-full h-full object-cover"
               />

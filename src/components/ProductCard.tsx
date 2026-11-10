@@ -64,7 +64,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Product Image area */}
       <div className="relative aspect-[4/3] bg-[#EEEEEC] overflow-hidden">
         <img
-          src={product.images[0]}
+          src={product.images[0]?.startsWith('/') ? `.${product.images[0]}` : product.images[0]}
           alt={product.name}
           referrerPolicy="no-referrer"
           className={`w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105 ${

@@ -3,22 +3,33 @@ import { useShop } from '../context/ShopContext';
 import { ProductCard } from '../components/ProductCard';
 import { ArrowRight, ShieldCheck, Sparkles, Feather, Clock } from 'lucide-react';
 
+import defaultHeroImg from '../assets/images/hero_luxury_sneaker_1794183121618.jpg';
+import craftsmanshipImg from '../assets/images/craftsmanship_story_1794183122649.jpg';
+
 export const HomePage: React.FC = () => {
   const { products, setCurrentPage, setSelectedCollection, viewProduct, siteSettings, collections, formatPKR } = useShop();
 
   const bestSellers = products.filter(p => p.isBestSeller).slice(0, 3);
   const newArrivals = products.filter(p => p.isNewArrival).slice(0, 3);
 
+  const getHeroImg = (src?: string) => {
+    if (!src) return defaultHeroImg;
+    if (src.includes('hero_luxury_sneaker_1794183121618.jpg')) return defaultHeroImg;
+    if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) return src;
+    if (src.startsWith('/')) return `.${src}`;
+    return src;
+  };
+
   return (
-    <div className="space-y-24 pb-20">
+    <div className="space-y-20 pb-20">
       
       {/* 1. CINEMATIC LUXURY HERO SECTION */}
       <section className="relative overflow-hidden bg-[#111111] text-[#FFFFFF]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-10 sm:pt-8 sm:pb-12 md:pt-10 md:pb-14">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
             {/* Left Copy Column */}
-            <div className="lg:col-span-6 space-y-6 z-10">
+            <div className="lg:col-span-6 space-y-5 z-10">
               <div className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.3em] text-[#D8C7AE] font-semibold">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{siteSettings?.heroTag || 'The 2026 Sovereign Edition'}</span>
@@ -33,7 +44,7 @@ export const HomePage: React.FC = () => {
               </p>
 
               {/* Action Buttons */}
-              <div className="pt-4 flex flex-wrap items-center gap-4">
+              <div className="pt-3 flex flex-wrap items-center gap-4">
                 <button
                   onClick={() => setCurrentPage('shop')}
                   className="bg-[#D8C7AE] text-[#111111] px-8 py-3.5 text-xs uppercase tracking-[0.2em] font-bold hover:bg-white transition-all duration-300 shadow-xl flex items-center gap-2 cursor-pointer"
@@ -50,7 +61,7 @@ export const HomePage: React.FC = () => {
               </div>
 
               {/* Trust Callouts */}
-              <div className="pt-6 border-t border-[#222222] grid grid-cols-3 gap-4 text-xs text-neutral-400">
+              <div className="pt-5 border-t border-[#222222] grid grid-cols-3 gap-4 text-xs text-neutral-400">
                 <div>
                   <div className="font-semibold text-white">Full-Grain Leather</div>
                   <div className="text-[11px] text-neutral-400">Handpicked hides</div>
@@ -70,12 +81,12 @@ export const HomePage: React.FC = () => {
             <div className="lg:col-span-6 relative">
               <div className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] overflow-hidden shadow-2xl border border-white/10">
                 <img
-                  src={siteSettings?.heroImage || '/images/hero_luxury_sneaker_1794183121618.jpg'}
+                  src={getHeroImg(siteSettings?.heroImage)}
                   alt="19BeesKicks Sovereign Luxury Footwear"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700"
                   onError={(e: any) => {
-                    e.currentTarget.src = '/images/hero_luxury_sneaker_1794183121618.jpg';
+                    e.currentTarget.src = defaultHeroImg;
                   }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
@@ -133,7 +144,7 @@ export const HomePage: React.FC = () => {
             >
               <div className="aspect-[4/3] overflow-hidden bg-[#EEEEEC]">
                 <img
-                  src={col.image}
+                  src={col.image?.startsWith('/') ? `.${col.image}` : col.image}
                   alt={col.title}
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -223,7 +234,7 @@ export const HomePage: React.FC = () => {
             <div className="lg:col-span-6 relative">
               <div className="aspect-[16/10] overflow-hidden shadow-xl border border-[#EEEEEC]">
                 <img
-                  src="/src/assets/images/craftsmanship_story_1794183122649.jpg"
+                  src={craftsmanshipImg}
                   alt="Artisan shoemaker at 19BeesKicks workshop"
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"

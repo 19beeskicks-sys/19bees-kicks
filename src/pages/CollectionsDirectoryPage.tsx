@@ -2,6 +2,11 @@ import React from 'react';
 import { useShop } from '../context/ShopContext';
 import { ArrowRight } from 'lucide-react';
 
+import menImg from '../assets/images/product_men_sneaker_1794183121675.jpg';
+import womenImg from '../assets/images/product_women_runner_1794183121544.jpg';
+import heroImg from '../assets/images/hero_luxury_sneaker_1794183121618.jpg';
+import loafersImg from '../assets/images/product_casual_loafers_1794183123383.jpg';
+
 export const CollectionsDirectoryPage: React.FC = () => {
   const { setCurrentPage, setSelectedCollection } = useShop();
 
@@ -10,42 +15,42 @@ export const CollectionsDirectoryPage: React.FC = () => {
       title: "Men's Footwear",
       tag: "men",
       desc: "Architectural low-tops, formal-casual sneakers, and Italian calfskin leather silhouettes.",
-      image: "/src/assets/images/product_men_sneaker_1794183121675.jpg",
+      image: menImg,
       count: "12 Exclusive Models"
     },
     {
       title: "Women's Footwear",
       tag: "women",
       desc: "Featherlight runners, champagne metallic accents, and glove-soft cream lambskin trainers.",
-      image: "/src/assets/images/product_women_runner_1794183121544.jpg",
+      image: womenImg,
       count: "8 Coveted Models"
     },
     {
       title: "Designer Sneakers",
       tag: "sneakers",
       desc: "Modern sculptural street silhouettes crafted with travertine midsoles and multi-compound ergonomics.",
-      image: "/src/assets/images/hero_luxury_sneaker_1794183121618.jpg",
+      image: heroImg,
       count: "16 High-Rebound Pairs"
     },
     {
       title: "Casual & Loafer Hybrids",
       tag: "casual",
       desc: "Hand-burnished caramel leather meeting sneaker flexibility for meetings, travel, and evening outings.",
-      image: "/src/assets/images/product_casual_loafers_1794183123383.jpg",
+      image: loafersImg,
       count: "6 Handcrafted Pairs"
     },
     {
       title: "Best Sellers",
       tag: "bestsellers",
       desc: "Our most requested models with over 98% 5-star verified customer ratings in Pakistan.",
-      image: "/src/assets/images/hero_luxury_sneaker_1794183121618.jpg",
+      image: heroImg,
       count: "Iconic Top 5"
     },
     {
       title: "New Arrivals Batch",
       tag: "newarrivals",
       desc: "Limited-edition studio drops featuring contemporary seasonal leather dyes and performance cushions.",
-      image: "/src/assets/images/product_men_sneaker_1794183121675.jpg",
+      image: menImg,
       count: "Just Dropped"
     }
   ];
