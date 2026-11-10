@@ -1,33 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useShop } from '../context/ShopContext';
-import { Product, Order, AdminStats, Collection, Category, Coupon, SiteSettings, CustomerSummary } from '../types';
+import { Product, Order, Collection, Category, Coupon, SiteSettings, CustomerSummary } from '../types';
 import {
   ShieldCheck,
   Package,
   ShoppingBag,
   Users,
-  DollarSign,
-  Clock,
   AlertTriangle,
-  CheckCircle,
-  XCircle,
   Search,
   Plus,
   Trash2,
   Edit,
-  Truck,
   CreditCard,
   Tag,
-  FolderPlus,
   Sliders,
   Mail,
-  RefreshCw,
   ExternalLink,
   Lock,
   Layers,
-  ArrowUpRight,
-  Eye,
-  Check,
   Save,
   LogOut,
   TrendingUp,
@@ -43,10 +33,28 @@ export const AdminDashboard: React.FC = () => {
     formatPKR,
     showToast,
     siteSettings,
-    refreshSettings,
-    refreshProducts,
-    refreshCollections,
-    refreshCategories
+    updateSiteSettings,
+    products,
+    addProduct,
+    updateProduct,
+    deleteProduct,
+    updateProductStock,
+    categories,
+    addCategory,
+    updateCategory,
+    deleteCategory,
+    collections,
+    addCollection,
+    updateCollection,
+    deleteCollection,
+    orders,
+    updateOrderStatus,
+    verifyOrderPayment,
+    coupons,
+    addCoupon,
+    updateCoupon,
+    deleteCoupon,
+    resetDemoCatalog
   } = useShop();
 
   // Active Management Tab
@@ -63,19 +71,6 @@ export const AdminDashboard: React.FC = () => {
     | 'settings'
     | 'inquiries'
   >('kpis');
-
-  // Core Data States
-  const [stats, setStats] = useState<AdminStats | null>(null);
-  const [financials, setFinancials] = useState<any | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [customers, setCustomers] = useState<CustomerSummary[]>([]);
-  const [collections, setCollections] = useState<Collection[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [coupons, setCoupons] = useState<Coupon[]>([]);
-  const [contactMessages, setContactMessages] = useState<any[]>([]);
-  const [subscribers, setSubscribers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Search & Filter States
   const [orderSearch, setOrderSearch] = useState('');
@@ -114,61 +109,13 @@ export const AdminDashboard: React.FC = () => {
   // Site Settings Form State
   const [settingsForm, setSettingsForm] = useState<SiteSettings>({ ...siteSettings });
 
-  // Load All Admin Data
-  const loadAdminData = async () => {
-    try {
-      setLoading(true);
-      const [
-        statsRes,
-        financialsRes,
-        ordersRes,
-        productsRes,
-        customersRes,
-        collectionsRes,
-        categoriesRes,
-        couponsRes,
-        contactRes,
-        newsletterRes,
-        settingsRes
-      ] = await Promise.all([
-        fetch('/api/admin/stats').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/admin/financials').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/orders').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/products').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/customers').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/collections').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/categories').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/coupons').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/contact').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/newsletter').then(r => r.json()).catch(() => ({ success: false })),
-        fetch('/api/settings').then(r => r.json()).catch(() => ({ success: false }))
-      ]);
+  // STRICT ACCESS CONTROL: Only 19beeskicks@gmail.com with admin role
+  const isMasterAdmin =
+    user &&
+    user.role === 'admin' &&
+    user.email.toLowerCase() === '19beeskicks@gmail.com';
 
-      if (statsRes.success) setStats(statsRes.stats);
-      if (financialsRes.success) setFinancials(financialsRes.financials);
-      if (ordersRes.success) setOrders(ordersRes.orders || []);
-      if (productsRes.success) setProducts(productsRes.products || []);
-      if (customersRes.success) setCustomers(customersRes.customers || []);
-      if (collectionsRes.success) setCollections(collectionsRes.collections || []);
-      if (categoriesRes.success) setCategories(categoriesRes.categories || []);
-      if (couponsRes.success) setCoupons(couponsRes.coupons || []);
-      if (contactRes.success) setContactMessages(contactRes.messages || []);
-      if (newsletterRes.success) setSubscribers(newsletterRes.subscribers || []);
-      if (settingsRes.success && settingsRes.settings) setSettingsForm(settingsRes.settings);
-    } catch (err) {
-      console.error('Error loading admin data:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      loadAdminData();
-    }
-  }, [user]);
-
-  // Handle Quick Admin Login
+  // Quick Admin Login
   const handleQuickLogin = async (email: string, pass: string) => {
     setLoginSubmitting(true);
     setLoginError('');
@@ -176,7 +123,7 @@ export const AdminDashboard: React.FC = () => {
     if (!res.success) {
       setLoginError(res.message || 'Login failed');
     } else {
-      showToast('Admin authentication confirmed. Welcome back.');
+      showToast('Admin access verified. Welcome, Abdul Samad.');
     }
     setLoginSubmitting(false);
   };
@@ -190,307 +137,47 @@ export const AdminDashboard: React.FC = () => {
     handleQuickLogin(loginEmail, loginPassword);
   };
 
-  // Update Order Status
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: Order['status'], note?: string) => {
-    try {
-      const res = await fetch(`/api/orders/${orderId}/status`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status: newStatus,
-          note: note || `Status updated to ${newStatus} by Administrator`
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Order status updated to ${newStatus}`);
-        loadAdminData();
-        if (selectedOrderDetails && selectedOrderDetails.id === orderId) {
-          setSelectedOrderDetails(data.order);
-        }
-      } else {
-        showToast(data.message || 'Failed to update order status');
-      }
-    } catch {
-      showToast('Failed to update status');
-    }
-  };
-
-  // Verify / Reject Payment
-  const handleVerifyPayment = async (status: 'verified' | 'rejected') => {
-    if (!verifyingOrder) return;
-    try {
-      const res = await fetch(`/api/orders/${verifyingOrder.id}/verify-payment`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          status,
-          adminNotes: adminNote || (status === 'verified' ? 'JazzCash transaction confirmed by Admin' : 'Payment rejected by Admin')
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Payment ${status === 'verified' ? 'Approved' : 'Rejected'} successfully`);
-        setVerifyingOrder(null);
-        setAdminNote('');
-        loadAdminData();
-      }
-    } catch {
-      showToast('Error verifying payment');
-    }
-  };
-
-  // Quick Stock Adjustment
-  const handleQuickStock = async (productId: string, newCount: number) => {
-    try {
-      const res = await fetch(`/api/products/${productId}/stock`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ stockCount: Math.max(0, newCount) })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Stock updated to ${newCount} pairs (${newCount === 0 ? 'Marked Sold Out' : 'Active'})`);
-        loadAdminData();
-        refreshProducts();
-      }
-    } catch {
-      showToast('Failed to adjust stock');
-    }
-  };
-
-  // Save / Edit Product
-  const handleSaveProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingProduct) return;
-
-    try {
-      const isNew = !editingProduct.id || editingProduct.id.startsWith('new-');
-      const url = isNew ? '/api/products' : `/api/products/${editingProduct.id}`;
-      const method = isNew ? 'POST' : 'PUT';
-
-      const payload = {
-        name: editingProduct.name,
-        category: editingProduct.category,
-        price: Number(editingProduct.price),
-        originalPrice: editingProduct.originalPrice ? Number(editingProduct.originalPrice) : undefined,
-        stockCount: Number(editingProduct.stockCount),
-        inStock: Number(editingProduct.stockCount) > 0 ? editingProduct.inStock : false,
-        isBestSeller: Boolean(editingProduct.isBestSeller),
-        isNewArrival: Boolean(editingProduct.isNewArrival),
-        description: editingProduct.description,
-        details: Array.isArray(editingProduct.details) ? editingProduct.details : [editingProduct.details],
-        images: editingProduct.images.filter(img => img.trim().length > 0),
-        sizes: editingProduct.sizes.map(Number),
-        colors: editingProduct.colors
-      };
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json();
-
-      if (res.ok && data.success) {
-        showToast(`Product "${editingProduct.name}" ${isNew ? 'added' : 'updated'} successfully`);
-        setIsProductModalOpen(false);
-        setEditingProduct(null);
-        loadAdminData();
-        refreshProducts();
-      } else {
-        showToast(data.message || 'Failed to save product');
-      }
-    } catch {
-      showToast('Error saving product');
-    }
-  };
-
-  // Delete Product
-  const handleDeleteProduct = async (id: string, name: string) => {
-    if (!window.confirm(`Are you sure you want to delete "${name}" from the store catalog?`)) return;
-    try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Deleted ${name}`);
-        loadAdminData();
-        refreshProducts();
-      }
-    } catch {
-      showToast('Failed to delete product');
-    }
-  };
-
-  // Save Site Settings
-  const handleSaveSettings = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/settings', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(settingsForm)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast('Website content, shipping rates & accounts updated successfully!');
-        refreshSettings();
-        loadAdminData();
-      }
-    } catch {
-      showToast('Failed to update website settings');
-    }
-  };
-
-  // Save Collection
-  const handleSaveCollection = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCollection) return;
-    try {
-      const isNew = !editingCollection.id || editingCollection.id.startsWith('new-');
-      const url = isNew ? '/api/collections' : `/api/collections/${editingCollection.id}`;
-      const method = isNew ? 'POST' : 'PUT';
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingCollection)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Collection ${isNew ? 'created' : 'updated'} successfully`);
-        setIsCollectionModalOpen(false);
-        setEditingCollection(null);
-        loadAdminData();
-        refreshCollections();
-      }
-    } catch {
-      showToast('Error saving collection');
-    }
-  };
-
-  // Delete Collection
-  const handleDeleteCollection = async (id: string, title: string) => {
-    if (!window.confirm(`Delete collection "${title}"?`)) return;
-    try {
-      const res = await fetch(`/api/collections/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Collection "${title}" deleted`);
-        loadAdminData();
-        refreshCollections();
-      }
-    } catch {
-      showToast('Error deleting collection');
-    }
-  };
-
-  // Save Category
-  const handleSaveCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCategory) return;
-    try {
-      const isNew = !editingCategory.id || editingCategory.id.startsWith('new-');
-      const url = isNew ? '/api/categories' : `/api/categories/${editingCategory.id}`;
-      const method = isNew ? 'POST' : 'PUT';
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingCategory)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Category ${isNew ? 'created' : 'updated'}`);
-        setIsCategoryModalOpen(false);
-        setEditingCategory(null);
-        loadAdminData();
-        refreshCategories();
-      }
-    } catch {
-      showToast('Error saving category');
-    }
-  };
-
-  // Delete Category
-  const handleDeleteCategory = async (id: string, name: string) => {
-    if (!window.confirm(`Delete category "${name}"?`)) return;
-    try {
-      const res = await fetch(`/api/categories/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Category "${name}" deleted`);
-        loadAdminData();
-        refreshCategories();
-      }
-    } catch {
-      showToast('Error deleting category');
-    }
-  };
-
-  // Save Coupon
-  const handleSaveCoupon = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCoupon) return;
-    try {
-      const isNew = !editingCoupon.id || editingCoupon.id.startsWith('new-');
-      const url = isNew ? '/api/coupons' : `/api/coupons/${editingCoupon.id}`;
-      const method = isNew ? 'POST' : 'PUT';
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editingCoupon)
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Coupon "${editingCoupon.code}" saved`);
-        setIsCouponModalOpen(false);
-        setEditingCoupon(null);
-        loadAdminData();
-      }
-    } catch {
-      showToast('Error saving coupon');
-    }
-  };
-
-  // Delete Coupon
-  const handleDeleteCoupon = async (id: string, code: string) => {
-    if (!window.confirm(`Delete coupon "${code}"?`)) return;
-    try {
-      const res = await fetch(`/api/coupons/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Coupon "${code}" deleted`);
-        loadAdminData();
-      }
-    } catch {
-      showToast('Error deleting coupon');
-    }
-  };
-
-  // Toggle Coupon Active Status
-  const handleToggleCouponActive = async (cp: Coupon) => {
-    try {
-      const res = await fetch(`/api/coupons/${cp.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: !cp.isActive })
-      });
-      const data = await res.json();
-      if (res.ok && data.success) {
-        showToast(`Coupon ${cp.code} is now ${!cp.isActive ? 'Active' : 'Disabled'}`);
-        loadAdminData();
-      }
-    } catch {
-      showToast('Error toggling coupon status');
-    }
-  };
-
   // -------------------------------------------------------------
-  // ACCESS CONTROL GATE (If not logged in as Admin)
+  // ACCESS CONTROL GATE (If not logged in as the master admin)
   // -------------------------------------------------------------
-  if (!user || user.role !== 'admin') {
+  if (!isMasterAdmin) {
+    // If a regular customer is logged in, show access denied
+    if (user && user.email.toLowerCase() !== '19beeskicks@gmail.com') {
+      return (
+        <div className="min-h-[70vh] flex items-center justify-center px-4 py-16 bg-[#F8F8F6]">
+          <div className="max-w-md w-full bg-white border border-[#EEEEEC] p-8 sm:p-10 shadow-xl space-y-6 text-center">
+            <div className="w-14 h-14 bg-rose-50 text-rose-700 rounded-full flex items-center justify-center mx-auto mb-2 border border-rose-200">
+              <Lock className="w-6 h-6" />
+            </div>
+            <span className="text-[10px] uppercase tracking-[0.25em] text-rose-700 font-bold">
+              Access Restricted
+            </span>
+            <h1 className="text-2xl font-serif-luxury font-bold text-[#111111]">
+              Administrator Privileges Required
+            </h1>
+            <p className="text-xs text-neutral-600 leading-relaxed">
+              You are currently signed in as <strong>{user.name}</strong> ({user.email}). Regular customer accounts do not have permission to view or manage the 19BeesKicks Operations Center.
+            </p>
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setCurrentPage('home')}
+                className="flex-1 bg-[#111111] text-white py-3 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
+              >
+                Go to Storefront
+              </button>
+              <button
+                onClick={logout}
+                className="flex-1 border border-[#EEEEEC] text-neutral-700 py-3 text-xs uppercase font-bold hover:bg-neutral-50 cursor-pointer"
+              >
+                Switch Account
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Unauthenticated Admin Login Portal
     return (
       <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-[#F8F8F6]">
         <div className="max-w-md w-full bg-white border border-[#EEEEEC] p-8 sm:p-10 shadow-xl space-y-6">
@@ -499,13 +186,13 @@ export const AdminDashboard: React.FC = () => {
               <Lock className="w-6 h-6" />
             </div>
             <span className="text-[10px] uppercase tracking-[0.25em] text-[#8C7A5E] font-bold">
-              Restricted Area
+              Authorized Personnel Only
             </span>
             <h1 className="text-2xl font-serif-luxury font-bold text-[#111111]">
               Admin Authentication
             </h1>
             <p className="text-xs text-neutral-500">
-              Enter authorized administrator credentials to manage footwear, inventory, orders, and finances.
+              Enter administrator credentials to access footwear catalog, stock, orders, and financial controls.
             </p>
           </div>
 
@@ -550,40 +237,26 @@ export const AdminDashboard: React.FC = () => {
               disabled={loginSubmitting}
               className="w-full bg-[#111111] text-white py-3 text-xs uppercase tracking-widest font-bold hover:bg-[#333333] transition-colors cursor-pointer shadow disabled:opacity-50"
             >
-              {loginSubmitting ? 'Verifying Credentials...' : 'Unlock Admin Dashboard'}
+              {loginSubmitting ? 'Verifying...' : 'Unlock Admin Operations'}
             </button>
           </form>
 
-          {/* Quick Pre-Configured Test Credentials */}
+          {/* Quick 1-Click Master Access */}
           <div className="pt-4 border-t border-[#EEEEEC] space-y-2">
             <span className="text-[10px] uppercase tracking-wider font-bold text-neutral-400 block text-center">
-              One-Click Admin Access (Demo Accounts)
+              Authorized Owner Access
             </span>
-            <div className="grid grid-cols-1 gap-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('19beeskicks@gmail.com', 'samad123')}
-                className="w-full bg-[#FAF8F5] border border-[#D8C7AE] p-2 text-left text-xs hover:bg-[#F2ECE1] transition-colors flex items-center justify-between cursor-pointer"
-              >
-                <div>
-                  <div className="font-bold text-[#111111]">19beeskicks@gmail.com</div>
-                  <div className="text-[10px] text-neutral-500">Master Owner Account · pass: samad123</div>
-                </div>
-                <span className="text-[10px] font-bold text-[#8C7A5E] uppercase tracking-wider">Login →</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin('admin@19beeskicks.com', 'admin123')}
-                className="w-full bg-[#FAF8F5] border border-[#D8C7AE] p-2 text-left text-xs hover:bg-[#F2ECE1] transition-colors flex items-center justify-between cursor-pointer"
-              >
-                <div>
-                  <div className="font-bold text-[#111111]">admin@19beeskicks.com</div>
-                  <div className="text-[10px] text-neutral-500">Operations Manager · pass: admin123</div>
-                </div>
-                <span className="text-[10px] font-bold text-[#8C7A5E] uppercase tracking-wider">Login →</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => handleQuickLogin('19beeskicks@gmail.com', 'samad123')}
+              className="w-full bg-[#FAF8F5] border border-[#D8C7AE] p-3 text-left text-xs hover:bg-[#F2ECE1] transition-colors flex items-center justify-between cursor-pointer"
+            >
+              <div>
+                <div className="font-bold text-[#111111]">19beeskicks@gmail.com</div>
+                <div className="text-[10px] text-neutral-500">Master Administrator (Abdul Samad)</div>
+              </div>
+              <span className="text-[10px] font-bold text-[#8C7A5E] uppercase tracking-wider">Login →</span>
+            </button>
           </div>
 
           <div className="text-center pt-2">
@@ -601,9 +274,50 @@ export const AdminDashboard: React.FC = () => {
   }
 
   // -------------------------------------------------------------
-  // MAIN ADMIN CONSOLE (Authenticated)
+  // COMPUTED LIVE FINANCIALS & KPIS
   // -------------------------------------------------------------
+  const grossRevenue = orders
+    .filter(o => o.status !== 'Cancelled')
+    .reduce((sum, o) => sum + o.total, 0);
 
+  const estimatedProfit = Math.round(grossRevenue * 0.6);
+  const totalOrdersCount = orders.length;
+  const averageOrderVal = totalOrdersCount > 0 ? Math.round(grossRevenue / totalOrdersCount) : 0;
+  const pendingOrdersCount = orders.filter(o => o.status === 'Pending').length;
+  const pendingVerificationsCount = orders.filter(
+    o => o.payment.method === 'jazzcash' && o.payment.status === 'pending'
+  ).length;
+  const lowStockCount = products.filter(p => p.stockCount > 0 && p.stockCount <= 5).length;
+  const outOfStockCount = products.filter(p => p.stockCount === 0 || !p.inStock).length;
+
+  // DERIVE AGGREGATE CUSTOMERS DIRECTORY
+  const customerMap = new Map<string, CustomerSummary>();
+  orders.forEach(ord => {
+    const key = ord.customer.phone || ord.customer.email;
+    const existing = customerMap.get(key);
+    if (existing) {
+      existing.totalOrders += 1;
+      existing.totalSpent += ord.total;
+      if (new Date(ord.createdAt) > new Date(existing.lastOrderDate)) {
+        existing.lastOrderDate = ord.createdAt;
+      }
+    } else {
+      customerMap.set(key, {
+        id: `cust-${key.replace(/[^a-zA-Z0-9]/g, '')}`,
+        name: ord.customer.fullName,
+        email: ord.customer.email,
+        phone: ord.customer.phone,
+        city: ord.customer.city,
+        totalOrders: 1,
+        totalSpent: ord.total,
+        lastOrderDate: ord.createdAt,
+        role: 'customer'
+      });
+    }
+  });
+  const customerList = Array.from(customerMap.values());
+
+  // FILTERS
   const filteredOrders = orders.filter(o => {
     if (orderStatusFilter !== 'all' && o.status.toLowerCase() !== orderStatusFilter.toLowerCase()) {
       return false;
@@ -641,7 +355,7 @@ export const AdminDashboard: React.FC = () => {
     return true;
   });
 
-  const filteredCustomers = customers.filter(c => {
+  const filteredCustomers = customerList.filter(c => {
     if (!customerSearch.trim()) return true;
     const q = customerSearch.toLowerCase();
     return (
@@ -652,10 +366,174 @@ export const AdminDashboard: React.FC = () => {
     );
   });
 
+  // -------------------------------------------------------------
+  // CRUD HANDLERS
+  // -------------------------------------------------------------
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    if (!editingProduct.name.trim()) {
+      showToast('Please enter a product name');
+      return;
+    }
+
+    const isNew = !editingProduct.id || editingProduct.id.startsWith('new-');
+    const slug = editingProduct.slug || editingProduct.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `prod-${Date.now()}`;
+    const price = Math.max(0, Number(editingProduct.price) || 0);
+    const stockCount = Math.max(0, Number(editingProduct.stockCount) || 0);
+
+    const finalProduct: Product = {
+      ...editingProduct,
+      id: isNew ? `prod-${Date.now()}` : editingProduct.id,
+      name: editingProduct.name.trim(),
+      slug,
+      price,
+      originalPrice: editingProduct.originalPrice ? Number(editingProduct.originalPrice) : undefined,
+      stockCount,
+      inStock: stockCount > 0,
+      category: editingProduct.category || categories[0]?.slug || 'men',
+      images: editingProduct.images && editingProduct.images.length > 0 && editingProduct.images[0]?.trim()
+        ? editingProduct.images
+        : ['./images/hero_luxury_sneaker_1794183121618.jpg'],
+      sizes: editingProduct.sizes && editingProduct.sizes.length > 0
+        ? editingProduct.sizes
+        : [39, 40, 41, 42, 43, 44, 45],
+      colors: editingProduct.colors && editingProduct.colors.length > 0
+        ? editingProduct.colors
+        : ['Obsidian Black'],
+      details: editingProduct.details && editingProduct.details.length > 0
+        ? editingProduct.details
+        : ['Handcrafted imported leather', 'Orthopedic memory foam insole', 'Blake-stitched Italian sole'],
+      rating: editingProduct.rating || 5.0,
+      reviewCount: editingProduct.reviewCount || 0,
+      createdAt: editingProduct.createdAt || new Date().toISOString()
+    };
+
+    if (isNew) {
+      await addProduct(finalProduct);
+      showToast(`Product "${finalProduct.name}" added to catalog successfully!`);
+    } else {
+      await updateProduct(finalProduct.id, finalProduct);
+      showToast(`Product "${finalProduct.name}" updated successfully!`);
+    }
+
+    setIsProductModalOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete "${name}" from the store catalog?`)) return;
+    await deleteProduct(id);
+    showToast(`Product "${name}" deleted.`);
+  };
+
+  const handleSaveCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCategory) return;
+
+    if (!editingCategory.name.trim()) {
+      showToast('Please enter category name');
+      return;
+    }
+
+    const isNew = !editingCategory.id || editingCategory.id.startsWith('new-');
+    const slug = editingCategory.slug || editingCategory.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') || `cat-${Date.now()}`;
+    const finalCategory: Category = {
+      id: isNew ? `cat-${Date.now()}` : editingCategory.id,
+      name: editingCategory.name.trim(),
+      slug,
+      description: editingCategory.description?.trim() || ''
+    };
+
+    if (isNew) {
+      await addCategory(finalCategory);
+      showToast(`Category "${finalCategory.name}" created successfully!`);
+    } else {
+      await updateCategory(finalCategory.id, finalCategory);
+      showToast(`Category "${finalCategory.name}" updated successfully!`);
+    }
+
+    setIsCategoryModalOpen(false);
+    setEditingCategory(null);
+  };
+
+  const handleDeleteCategory = async (id: string, name: string) => {
+    if (!window.confirm(`Delete category "${name}"?`)) return;
+    await deleteCategory(id);
+    showToast(`Category "${name}" deleted.`);
+  };
+
+  const handleSaveCollection = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCollection) return;
+
+    const isNew = !editingCollection.id || editingCollection.id.startsWith('new-');
+    const finalCol: Collection = {
+      ...editingCollection,
+      id: isNew ? `col-${Date.now()}` : editingCollection.id,
+      slug: editingCollection.slug || editingCollection.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')
+    };
+
+    if (isNew) {
+      await addCollection(finalCol);
+      showToast(`Collection "${finalCol.title}" created successfully!`);
+    } else {
+      await updateCollection(finalCol.id, finalCol);
+      showToast(`Collection "${finalCol.title}" updated!`);
+    }
+
+    setIsCollectionModalOpen(false);
+    setEditingCollection(null);
+  };
+
+  const handleDeleteCollection = async (id: string, title: string) => {
+    if (!window.confirm(`Delete collection "${title}"?`)) return;
+    await deleteCollection(id);
+    showToast(`Collection "${title}" deleted.`);
+  };
+
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCoupon) return;
+
+    const isNew = !editingCoupon.id || editingCoupon.id.startsWith('new-');
+    const finalCp: Coupon = {
+      ...editingCoupon,
+      id: isNew ? `cp-${Date.now()}` : editingCoupon.id,
+      code: editingCoupon.code.toUpperCase().trim(),
+      discountValue: Number(editingCoupon.discountValue),
+      minPurchase: Number(editingCoupon.minPurchase || 0)
+    };
+
+    if (isNew) {
+      await addCoupon(finalCp);
+      showToast(`Coupon "${finalCp.code}" created successfully!`);
+    } else {
+      await updateCoupon(finalCp.id, finalCp);
+      showToast(`Coupon "${finalCp.code}" updated!`);
+    }
+
+    setIsCouponModalOpen(false);
+    setEditingCoupon(null);
+  };
+
+  const handleDeleteCoupon = async (id: string, code: string) => {
+    if (!window.confirm(`Delete coupon "${code}"?`)) return;
+    await deleteCoupon(id);
+    showToast(`Coupon "${code}" deleted.`);
+  };
+
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    await updateSiteSettings(settingsForm);
+    showToast('Storefront content, shipping rules, and JazzCash details saved successfully!');
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-      {/* TOP EXECUTIVE BANNER */}
+      {/* TOP EXECUTIVE BANNER (Cleaned without Download ZIP) */}
       <div className="bg-[#111111] text-white p-6 sm:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl border border-neutral-800">
         <div>
           <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-[#D8C7AE] font-bold">
@@ -666,30 +544,23 @@ export const AdminDashboard: React.FC = () => {
             19BeesKicks Operations Center
           </h1>
           <p className="text-xs text-neutral-400 mt-1">
-            Logged in as <strong>{user.name}</strong> ({user.email}) · Changes sync live to customer store
+            Logged in as <strong>{user?.name || 'Abdul Samad'}</strong> ({user?.email}) · Instant live sync to customer storefront
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <a
-            href="/api/download-zip"
-            download="19BeesKicks-complete-project.zip"
-            className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-3.5 py-2 text-xs uppercase tracking-wider font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
-          >
-            <span>Download Project (.ZIP)</span>
-          </a>
           <button
             onClick={() => {
               setEditingProduct({
                 id: `new-${Date.now()}`,
                 name: '',
                 slug: '',
-                category: 'men',
+                category: categories[0]?.slug || 'men',
                 price: 18500,
                 originalPrice: 22000,
                 description: '',
-                details: ['Handcrafted imported leather', 'Orthopedic cushioned memory insole', 'Blake-stitched Italian sole'],
-                images: ['/images/hero_luxury_sneaker_1794183121618.jpg'],
+                details: ['Handcrafted imported leather', 'Orthopedic memory foam insole', 'Blake-stitched Italian sole'],
+                images: ['./images/hero_luxury_sneaker_1794183121618.jpg'],
                 sizes: [39, 40, 41, 42, 43, 44, 45],
                 colors: ['Obsidian Black', 'Travertine Beige'],
                 inStock: true,
@@ -702,14 +573,14 @@ export const AdminDashboard: React.FC = () => {
               });
               setIsProductModalOpen(true);
             }}
-            className="bg-[#D8C7AE] text-[#111111] px-3.5 py-2 text-xs uppercase tracking-wider font-bold hover:bg-white transition-colors flex items-center gap-1.5 cursor-pointer shadow"
+            className="bg-[#D8C7AE] text-[#111111] px-4 py-2 text-xs uppercase tracking-wider font-bold hover:bg-white transition-colors flex items-center gap-1.5 cursor-pointer shadow"
           >
             <Plus className="w-4 h-4" />
             <span>Add Footwear</span>
           </button>
           <button
             onClick={() => setCurrentPage('home')}
-            className="border border-white/30 text-white px-3 py-2 text-xs uppercase tracking-wider font-medium hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
+            className="border border-white/30 text-white px-3.5 py-2 text-xs uppercase tracking-wider font-medium hover:bg-white/10 transition-colors cursor-pointer flex items-center gap-1"
           >
             <ExternalLink className="w-3.5 h-3.5" />
             <span>Storefront</span>
@@ -724,21 +595,20 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* HORIZONTAL TAB NAVIGATION (11 Tabs) */}
-      <div className="bg-white border border-[#EEEEEC] px-4 overflow-x-auto">
+      {/* HORIZONTAL TAB NAVIGATION */}
+      <div className="bg-white border border-[#EEEEEC] px-4 overflow-x-auto shadow-sm">
         <div className="flex gap-6 text-xs uppercase tracking-wider font-bold whitespace-nowrap min-w-max">
           {[
             { id: 'kpis', label: 'Executive KPIs', icon: TrendingUp },
             { id: 'products', label: `Footwear Catalog (${products.length})`, icon: Package },
-            { id: 'inventory', label: `Inventory & Alerts (${products.filter(p => p.stockCount <= 5).length})`, icon: AlertTriangle },
+            { id: 'inventory', label: `Inventory & Alerts (${lowStockCount + outOfStockCount})`, icon: AlertTriangle },
             { id: 'orders', label: `Orders (${orders.length})`, icon: ShoppingBag },
-            { id: 'payments', label: `Payments (${orders.filter(o => o.payment.status === 'pending').length} Pending)`, icon: CreditCard },
-            { id: 'customers', label: `Customers (${customers.length})`, icon: Users },
+            { id: 'payments', label: `Payments (${pendingVerificationsCount} Pending)`, icon: CreditCard },
+            { id: 'customers', label: `Customers (${customerList.length})`, icon: Users },
             { id: 'collections', label: `Collections (${collections.length})`, icon: Layers },
             { id: 'categories', label: `Categories (${categories.length})`, icon: Tag },
             { id: 'coupons', label: `Coupons (${coupons.length})`, icon: Percent },
-            { id: 'settings', label: 'Website Content & Shipping', icon: Sliders },
-            { id: 'inquiries', label: `Inquiries (${contactMessages.length})`, icon: Mail }
+            { id: 'settings', label: 'Website Content & Shipping', icon: Sliders }
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -764,14 +634,13 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'kpis' && (
         <div className="space-y-6">
-          {/* KPI Stat Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             <div className="bg-white p-5 sm:p-6 border border-[#EEEEEC] shadow-sm space-y-1">
               <span className="text-[11px] uppercase tracking-wider text-neutral-400 font-bold block">
                 Gross Revenue
               </span>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-[#111111]">
-                {formatPKR(financials?.grossRevenue || stats?.totalRevenue || 0)}
+                {formatPKR(grossRevenue)}
               </div>
               <span className="text-[11px] text-emerald-700 font-medium">
                 Live verified orders & dispatches
@@ -783,10 +652,10 @@ export const AdminDashboard: React.FC = () => {
                 Estimated Net Profit (60% Margin)
               </span>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-emerald-800">
-                {formatPKR(financials?.estimatedProfit || Math.round((stats?.totalRevenue || 0) * 0.6))}
+                {formatPKR(estimatedProfit)}
               </div>
               <span className="text-[11px] text-neutral-500">
-                After materials & atelier craftsmanship
+                After materials & atelier assembly
               </span>
             </div>
 
@@ -795,10 +664,10 @@ export const AdminDashboard: React.FC = () => {
                 Total Orders & AOV
               </span>
               <div className="text-2xl sm:text-3xl font-mono font-bold text-[#111111]">
-                {orders.length} <span className="text-xs font-sans text-neutral-400 font-normal">orders</span>
+                {totalOrdersCount} <span className="text-xs font-sans text-neutral-400 font-normal">orders</span>
               </div>
               <span className="text-[11px] text-neutral-600 font-mono">
-                AOV: {formatPKR(financials?.averageOrderValue || 21500)}
+                AOV: {formatPKR(averageOrderVal)}
               </span>
             </div>
 
@@ -809,18 +678,16 @@ export const AdminDashboard: React.FC = () => {
               <div className="text-2xl sm:text-3xl font-mono font-bold text-[#111111] flex items-center gap-2">
                 <span>{products.length}</span>
                 <span className="text-xs text-rose-700 font-sans font-normal">
-                  ({products.filter(p => p.stockCount === 0).length} Sold Out)
+                  ({outOfStockCount} Sold Out)
                 </span>
               </div>
               <span className="text-[11px] text-amber-700">
-                {products.filter(p => p.stockCount > 0 && p.stockCount <= 5).length} models low stock
+                {lowStockCount} models low stock (&le; 5)
               </span>
             </div>
           </div>
 
-          {/* Revenue by Payment Channels & Top Selling Products */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
             {/* Sales by Payment Channel */}
             <div className="bg-white p-6 border border-[#EEEEEC] shadow-sm space-y-4">
               <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">
@@ -828,25 +695,23 @@ export const AdminDashboard: React.FC = () => {
               </h3>
               <div className="space-y-3">
                 {[
-                  { channel: 'JazzCash Instant', key: 'jazzcash', count: orders.filter(o => o.payment.method === 'jazzcash').length },
-                  { channel: 'Cash on Delivery (COD)', key: 'cod', count: orders.filter(o => o.payment.method === 'cod').length },
-                  { channel: 'Easypaisa Transfer', key: 'easypaisa', count: orders.filter(o => o.payment.method === 'easypaisa').length },
-                  { channel: 'Direct Bank Transfer', key: 'bank_transfer', count: orders.filter(o => o.payment.method === 'bank_transfer').length }
+                  { channel: 'JazzCash Instant', key: 'jazzcash' },
+                  { channel: 'Cash on Delivery (COD)', key: 'cod' },
+                  { channel: 'Easypaisa Transfer', key: 'easypaisa' },
+                  { channel: 'Direct Bank Transfer', key: 'bank_transfer' }
                 ].map((item, idx) => {
-                  const channelTotal = orders
-                    .filter(o => o.payment.method === item.key && o.status !== 'Cancelled')
-                    .reduce((s, o) => s + o.total, 0);
-                  const totalRev = financials?.grossRevenue || 1;
-                  const pct = Math.round((channelTotal / (totalRev || 1)) * 100);
+                  const channelOrders = orders.filter(o => o.payment.method === item.key && o.status !== 'Cancelled');
+                  const channelTotal = channelOrders.reduce((s, o) => s + o.total, 0);
+                  const pct = grossRevenue > 0 ? Math.round((channelTotal / grossRevenue) * 100) : 0;
 
                   return (
                     <div key={idx} className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="font-semibold text-neutral-800">{item.channel} ({item.count} orders)</span>
+                        <span className="font-semibold text-neutral-800">{item.channel} ({channelOrders.length} orders)</span>
                         <span className="font-mono font-bold">{formatPKR(channelTotal)} ({pct}%)</span>
                       </div>
                       <div className="w-full bg-[#F8F8F6] h-2 rounded-full overflow-hidden border border-[#EEEEEC]">
-                        <div className="bg-[#111111] h-full" style={{ width: `${Math.max(4, pct)}%` }} />
+                        <div className="bg-[#111111] h-full" style={{ width: `${Math.max(pct, channelOrders.length > 0 ? 5 : 0)}%` }} />
                       </div>
                     </div>
                   );
@@ -866,7 +731,7 @@ export const AdminDashboard: React.FC = () => {
                       <span className="w-5 h-5 bg-[#FAF8F5] border border-[#D8C7AE] text-[#111111] text-[10px] font-bold rounded-full flex items-center justify-center shrink-0">
                         #{rank + 1}
                       </span>
-                      <img src={prod.images[0]} alt="" className="w-10 h-10 object-cover bg-neutral-100 border shrink-0" />
+                      <img src={prod.images[0]?.startsWith('/') ? `.${prod.images[0]}` : prod.images[0]} alt="" className="w-10 h-10 object-cover bg-neutral-100 border shrink-0" />
                       <div>
                         <div className="font-bold text-[#111111] line-clamp-1">{prod.name}</div>
                         <span className="text-[11px] text-neutral-500 uppercase">{prod.category}</span>
@@ -882,15 +747,14 @@ export const AdminDashboard: React.FC = () => {
                 ))}
               </div>
             </div>
-
           </div>
 
-          {/* Quick Pending JazzCash Queue Banner */}
+          {/* JazzCash Verification Queue */}
           <div className="bg-[#FAF8F5] border border-[#D8C7AE] p-6 space-y-3">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="text-base font-serif-luxury font-bold text-[#111111]">
-                  JazzCash Verification Queue
+                  JazzCash Verification Queue ({pendingVerificationsCount} Pending)
                 </h3>
                 <p className="text-xs text-neutral-600">
                   Customer payments awaiting cross-reference with Abdul Samad (03238917805).
@@ -924,9 +788,9 @@ export const AdminDashboard: React.FC = () => {
                     </div>
                   </div>
                 ))}
-              {orders.filter(o => o.payment.method === 'jazzcash' && o.payment.status === 'pending').length === 0 && (
+              {pendingVerificationsCount === 0 && (
                 <div className="py-3 text-xs text-neutral-500 italic">
-                  All pending JazzCash transactions have been verified. No pending audits.
+                  All pending JazzCash transactions have been audited. No pending verifications.
                 </div>
               )}
             </div>
@@ -939,14 +803,14 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'products' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
               <input
                 type="text"
                 value={productSearch}
                 onChange={e => setProductSearch(e.target.value)}
-                placeholder="Search products by model name, category, or color..."
+                placeholder="Search catalog by model name, category, or color..."
                 className="w-full pl-9 pr-3 py-2 text-xs bg-[#F8F8F6] border border-[#EEEEEC] outline-none"
               />
             </div>
@@ -969,12 +833,12 @@ export const AdminDashboard: React.FC = () => {
                     id: `new-${Date.now()}`,
                     name: '',
                     slug: '',
-                    category: 'men',
+                    category: categories[0]?.slug || 'men',
                     price: 18500,
                     originalPrice: 22000,
                     description: '',
                     details: ['Handcrafted imported leather', 'Orthopedic memory insole'],
-                    images: ['/images/hero_luxury_sneaker_1794183121618.jpg'],
+                    images: ['./images/hero_luxury_sneaker_1794183121618.jpg'],
                     sizes: [39, 40, 41, 42, 43, 44, 45],
                     colors: ['Obsidian Black', 'Travertine Beige'],
                     inStock: true,
@@ -995,7 +859,6 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          {/* Products Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map(prod => {
               const isSoldOut = prod.stockCount === 0 || !prod.inStock;
@@ -1009,7 +872,7 @@ export const AdminDashboard: React.FC = () => {
 
                   <div className="flex gap-4">
                     <img
-                      src={prod.images[0]}
+                      src={prod.images[0]?.startsWith('/') ? `.${prod.images[0]}` : prod.images[0]}
                       alt={prod.name}
                       className="w-24 h-24 object-cover bg-neutral-100 shrink-0 border border-[#EEEEEC]"
                     />
@@ -1033,18 +896,11 @@ export const AdminDashboard: React.FC = () => {
                   </div>
 
                   <div className="pt-3 mt-3 border-t border-[#EEEEEC] flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold text-[11px] ${
-                        isSoldOut ? 'text-rose-700' : prod.stockCount <= 5 ? 'text-amber-700' : 'text-emerald-700'
-                      }`}>
-                        Stock: {prod.stockCount} pairs
-                      </span>
-                      {prod.isBestSeller && (
-                        <span className="bg-[#FAF8F5] border border-[#D8C7AE] text-[9px] text-[#8C7A5E] px-1.5 py-0.2 font-bold uppercase">
-                          Best Seller
-                        </span>
-                      )}
-                    </div>
+                    <span className={`font-semibold text-[11px] ${
+                      isSoldOut ? 'text-rose-700' : prod.stockCount <= 5 ? 'text-amber-700' : 'text-emerald-700'
+                    }`}>
+                      Stock: {prod.stockCount} pairs
+                    </span>
 
                     <div className="flex items-center gap-2">
                       <button
@@ -1078,13 +934,13 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'inventory' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 border border-[#EEEEEC] gap-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-4 border border-[#EEEEEC] gap-4 shadow-sm">
             <div>
               <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">
-                Footwear Stock & Restock Hub
+                Stock & Restock Management
               </h3>
               <p className="text-xs text-neutral-500">
-                Products with 0 stock automatically show "Sold Out" badges and disable purchases on the storefront.
+                Any item set to 0 stock automatically displays "Sold Out" badges and disables purchases on the store.
               </p>
             </div>
 
@@ -1125,7 +981,7 @@ export const AdminDashboard: React.FC = () => {
                   <th className="p-3">Unit Price</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">Current Stock</th>
-                  <th className="p-3 text-right">Instant Quick Restock</th>
+                  <th className="p-3 text-right">Quick Restock Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#EEEEEC]">
@@ -1134,7 +990,7 @@ export const AdminDashboard: React.FC = () => {
                   return (
                     <tr key={prod.id} className="hover:bg-neutral-50/60">
                       <td className="p-3 flex items-center gap-3">
-                        <img src={prod.images[0]} alt="" className="w-10 h-10 object-cover bg-neutral-100 border shrink-0" />
+                        <img src={prod.images[0]?.startsWith('/') ? `.${prod.images[0]}` : prod.images[0]} alt="" className="w-10 h-10 object-cover bg-neutral-100 border shrink-0" />
                         <div>
                           <div className="font-bold text-[#111111]">{prod.name}</div>
                           <div className="text-[10px] text-neutral-500">Sizes: {prod.sizes.join(', ')}</div>
@@ -1162,25 +1018,34 @@ export const AdminDashboard: React.FC = () => {
                           type="number"
                           min="0"
                           value={prod.stockCount}
-                          onChange={e => handleQuickStock(prod.id, parseInt(e.target.value) || 0)}
+                          onChange={e => updateProductStock(prod.id, parseInt(e.target.value) || 0)}
                           className="w-20 bg-[#F8F8F6] border border-[#EEEEEC] p-1.5 text-xs font-mono font-bold text-center"
                         />
                       </td>
                       <td className="p-3 text-right space-x-1.5">
                         <button
-                          onClick={() => handleQuickStock(prod.id, prod.stockCount + 5)}
+                          onClick={() => {
+                            updateProductStock(prod.id, prod.stockCount + 5);
+                            showToast(`Added +5 pairs to ${prod.name}`);
+                          }}
                           className="bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 px-2 py-1 text-[11px] font-semibold cursor-pointer"
                         >
                           +5
                         </button>
                         <button
-                          onClick={() => handleQuickStock(prod.id, prod.stockCount + 10)}
+                          onClick={() => {
+                            updateProductStock(prod.id, prod.stockCount + 10);
+                            showToast(`Added +10 pairs to ${prod.name}`);
+                          }}
                           className="bg-neutral-100 hover:bg-neutral-200 border border-neutral-300 px-2 py-1 text-[11px] font-semibold cursor-pointer"
                         >
                           +10
                         </button>
                         <button
-                          onClick={() => handleQuickStock(prod.id, 0)}
+                          onClick={() => {
+                            updateProductStock(prod.id, 0);
+                            showToast(`Marked ${prod.name} as Sold Out`);
+                          }}
                           className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-2 py-1 text-[11px] font-semibold cursor-pointer"
                         >
                           Mark Sold
@@ -1200,7 +1065,7 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'orders' && (
         <div className="space-y-6">
-          <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex flex-col sm:flex-row gap-4 justify-between bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div className="relative flex-1">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
               <input
@@ -1213,7 +1078,7 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 text-xs">
-              <span className="text-neutral-400 uppercase font-semibold">Filter Status:</span>
+              <span className="text-neutral-400 uppercase font-semibold">Filter:</span>
               <select
                 value={orderStatusFilter}
                 onChange={e => setOrderStatusFilter(e.target.value)}
@@ -1237,11 +1102,11 @@ export const AdminDashboard: React.FC = () => {
                 <tr className="bg-neutral-50 border-b border-[#EEEEEC] uppercase font-bold text-neutral-500">
                   <th className="p-3">Order ID & Date</th>
                   <th className="p-3">Customer Details</th>
-                  <th className="p-3">Delivery City</th>
+                  <th className="p-3">Destination</th>
                   <th className="p-3">Pairs</th>
                   <th className="p-3">Amount</th>
                   <th className="p-3">Payment</th>
-                  <th className="p-3">Dispatch Status</th>
+                  <th className="p-3">Status</th>
                   <th className="p-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -1282,7 +1147,11 @@ export const AdminDashboard: React.FC = () => {
                     <td className="p-3">
                       <select
                         value={order.status}
-                        onChange={e => handleUpdateOrderStatus(order.id, e.target.value as any)}
+                        onChange={async e => {
+                          const newStatus = e.target.value as Order['status'];
+                          await updateOrderStatus(order.id, newStatus);
+                          showToast(`Order status updated to ${newStatus}`);
+                        }}
                         className="bg-[#F8F8F6] border border-[#EEEEEC] p-1.5 text-xs font-semibold cursor-pointer"
                       >
                         <option value="Pending">Pending</option>
@@ -1301,15 +1170,6 @@ export const AdminDashboard: React.FC = () => {
                       >
                         Details
                       </button>
-                      {order.status === 'Pending' && (
-                        <button
-                          onClick={() => handleUpdateOrderStatus(order.id, 'Confirmed')}
-                          className="bg-emerald-700 text-white px-2.5 py-1 text-[11px] uppercase font-bold hover:bg-emerald-800 cursor-pointer"
-                          title="Confirm Order"
-                        >
-                          Confirm
-                        </button>
-                      )}
                     </td>
                   </tr>
                 ))}
@@ -1320,40 +1180,10 @@ export const AdminDashboard: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* 5. PAYMENTS LEDGER */}
+      {/* 5. PAYMENTS AUDIT */}
       {/* ========================================================= */}
       {activeTab === 'payments' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-white p-5 border border-[#EEEEEC] shadow-sm">
-              <span className="text-xs uppercase font-bold text-neutral-400 block">Verified Payments</span>
-              <div className="text-2xl font-mono font-bold text-emerald-700 mt-1">
-                {orders.filter(o => o.payment.status === 'verified').length} orders
-              </div>
-              <span className="text-[11px] text-neutral-500">
-                {formatPKR(orders.filter(o => o.payment.status === 'verified').reduce((s, o) => s + o.total, 0))} collected
-              </span>
-            </div>
-
-            <div className="bg-white p-5 border border-[#EEEEEC] shadow-sm">
-              <span className="text-xs uppercase font-bold text-neutral-400 block">Pending Audits</span>
-              <div className="text-2xl font-mono font-bold text-amber-600 mt-1">
-                {orders.filter(o => o.payment.status === 'pending').length} orders
-              </div>
-              <span className="text-[11px] text-amber-800">
-                {formatPKR(orders.filter(o => o.payment.status === 'pending').reduce((s, o) => s + o.total, 0))} pending clearance
-              </span>
-            </div>
-
-            <div className="bg-white p-5 border border-[#EEEEEC] shadow-sm">
-              <span className="text-xs uppercase font-bold text-neutral-400 block">Rejected / Failed</span>
-              <div className="text-2xl font-mono font-bold text-rose-700 mt-1">
-                {orders.filter(o => o.payment.status === 'rejected').length} orders
-              </div>
-              <span className="text-[11px] text-neutral-500">Unsuccessful transactions</span>
-            </div>
-          </div>
-
           <div className="bg-white border border-[#EEEEEC] p-6 space-y-4 shadow-sm">
             <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">
               Payment Audit Ledger
@@ -1402,7 +1232,7 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'customers' && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div className="relative flex-1 max-w-md">
               <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-3" />
               <input
@@ -1414,7 +1244,7 @@ export const AdminDashboard: React.FC = () => {
               />
             </div>
             <span className="text-xs text-neutral-500 font-semibold">
-              Total Clients: {customers.length}
+              Total Clients: {customerList.length}
             </span>
           </div>
 
@@ -1424,7 +1254,7 @@ export const AdminDashboard: React.FC = () => {
                 <tr className="bg-neutral-50 border-b border-[#EEEEEC] uppercase font-bold text-neutral-500">
                   <th className="p-3">Customer Name</th>
                   <th className="p-3">Contact (Phone & Email)</th>
-                  <th className="p-3">Primary City</th>
+                  <th className="p-3">City</th>
                   <th className="p-3">Orders Placed</th>
                   <th className="p-3">Lifetime Spend</th>
                   <th className="p-3">Last Order</th>
@@ -1436,11 +1266,6 @@ export const AdminDashboard: React.FC = () => {
                   <tr key={cust.id} className="hover:bg-neutral-50/60">
                     <td className="p-3">
                       <div className="font-bold text-[#111111]">{cust.name}</div>
-                      <span className={`text-[9px] uppercase px-1.5 py-0.2 rounded font-bold ${
-                        cust.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-neutral-100 text-neutral-600'
-                      }`}>
-                        {cust.role}
-                      </span>
                     </td>
                     <td className="p-3 font-mono">
                       <div>{cust.phone || 'N/A'}</div>
@@ -1450,7 +1275,7 @@ export const AdminDashboard: React.FC = () => {
                     <td className="p-3 font-bold">{cust.totalOrders} order(s)</td>
                     <td className="p-3 font-mono font-bold text-[#111111]">{formatPKR(cust.totalSpent)}</td>
                     <td className="p-3 text-neutral-500 text-[11px]">
-                      {cust.lastOrderDate ? new Date(cust.lastOrderDate).toLocaleDateString() : 'Never'}
+                      {new Date(cust.lastOrderDate).toLocaleDateString()}
                     </td>
                     <td className="p-3 text-right">
                       <button
@@ -1479,10 +1304,10 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'collections' && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div>
-              <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">Curated Footwear Collections</h3>
-              <p className="text-xs text-neutral-500">Manage featured collections shown across the website.</p>
+              <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">Curated Collections</h3>
+              <p className="text-xs text-neutral-500">Manage curated collections shown across the website.</p>
             </div>
             <button
               onClick={() => {
@@ -1492,7 +1317,7 @@ export const AdminDashboard: React.FC = () => {
                   slug: '',
                   subtitle: '',
                   description: '',
-                  image: '/images/hero_luxury_sneaker_1794183121618.jpg',
+                  image: './images/hero_luxury_sneaker_1794183121618.jpg',
                   tag: 'featured'
                 });
                 setIsCollectionModalOpen(true);
@@ -1508,7 +1333,7 @@ export const AdminDashboard: React.FC = () => {
             {collections.map(col => (
               <div key={col.id} className="bg-white border border-[#EEEEEC] p-4 flex flex-col justify-between shadow-sm">
                 <div>
-                  <img src={col.image} alt={col.title} className="w-full h-36 object-cover bg-neutral-100 border mb-3" />
+                  <img src={col.image?.startsWith('/') ? `.${col.image}` : col.image} alt={col.title} className="w-full h-36 object-cover bg-neutral-100 border mb-3" />
                   <span className="text-[10px] uppercase tracking-wider text-[#8C7A5E] font-bold">
                     Tag: {col.tag} · Slug: /{col.slug}
                   </span>
@@ -1547,10 +1372,10 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'categories' && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div>
               <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">Product Categories</h3>
-              <p className="text-xs text-neutral-500">Categories used for shop filters and navigation.</p>
+              <p className="text-xs text-neutral-500">Categories used for shop navigation and filtering.</p>
             </div>
             <button
               onClick={() => {
@@ -1571,7 +1396,7 @@ export const AdminDashboard: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {categories.map(cat => (
-              <div key={cat.id} className="bg-white border border-[#EEEEEC] p-4 flex items-center justify-between">
+              <div key={cat.id} className="bg-white border border-[#EEEEEC] p-4 flex items-center justify-between shadow-sm">
                 <div>
                   <h4 className="font-bold text-sm text-[#111111]">{cat.name}</h4>
                   <span className="text-[11px] font-mono text-[#8C7A5E]">Slug: {cat.slug}</span>
@@ -1608,9 +1433,9 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'coupons' && (
         <div className="space-y-6">
-          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div>
-              <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">Promotional Coupons & Vouchers</h3>
+              <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">Promotional Coupons</h3>
               <p className="text-xs text-neutral-500">Customers can enter these codes at checkout for discounts.</p>
             </div>
             <button
@@ -1642,7 +1467,10 @@ export const AdminDashboard: React.FC = () => {
                       {cp.code}
                     </span>
                     <button
-                      onClick={() => handleToggleCouponActive(cp)}
+                      onClick={async () => {
+                        await updateCoupon(cp.id, { isActive: !cp.isActive });
+                        showToast(`Coupon ${cp.code} is now ${!cp.isActive ? 'Active' : 'Disabled'}`);
+                      }}
                       className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded cursor-pointer ${
                         cp.isActive ? 'bg-emerald-100 text-emerald-800' : 'bg-neutral-200 text-neutral-600'
                       }`}
@@ -1689,9 +1517,7 @@ export const AdminDashboard: React.FC = () => {
       {/* ========================================================= */}
       {activeTab === 'settings' && (
         <form onSubmit={handleSaveSettings} className="space-y-6">
-          
-          {/* Header */}
-          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC]">
+          <div className="flex justify-between items-center bg-white p-4 border border-[#EEEEEC] shadow-sm">
             <div>
               <h3 className="text-sm font-serif-luxury font-bold text-[#111111]">
                 Website Content, Shipping & Account Settings
@@ -1710,8 +1536,6 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Box 1: Homepage Hero & Banner Content */}
             <div className="bg-white p-6 border border-[#EEEEEC] shadow-sm space-y-4">
               <h4 className="font-serif-luxury font-bold text-sm text-[#111111] pb-2 border-b border-[#EEEEEC]">
                 Homepage Banners & Hero Presentation
@@ -1731,7 +1555,7 @@ export const AdminDashboard: React.FC = () => {
 
               <div>
                 <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                  Hero Tagline (Small Pill)
+                  Hero Tagline
                 </label>
                 <input
                   type="text"
@@ -1765,18 +1589,6 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                  Hero Banner Image URL
-                </label>
-                <input
-                  type="text"
-                  value={settingsForm.heroImage}
-                  onChange={e => setSettingsForm({ ...settingsForm, heroImage: e.target.value })}
-                  className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-mono"
-                />
-              </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
@@ -1803,18 +1615,16 @@ export const AdminDashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Box 2: Shipping Rates & Payment Credentials */}
             <div className="space-y-6">
-              
               <div className="bg-white p-6 border border-[#EEEEEC] shadow-sm space-y-4">
                 <h4 className="font-serif-luxury font-bold text-sm text-[#111111] pb-2 border-b border-[#EEEEEC]">
-                  Shipping & Delivery Fee Rules
+                  Shipping Rules
                 </h4>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                      Free Shipping Threshold (PKR)
+                      Free Shipping Above (PKR)
                     </label>
                     <input
                       type="number"
@@ -1822,7 +1632,6 @@ export const AdminDashboard: React.FC = () => {
                       onChange={e => setSettingsForm({ ...settingsForm, freeShippingThreshold: Number(e.target.value) })}
                       className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-mono font-bold"
                     />
-                    <span className="text-[10px] text-neutral-400 mt-1 block">Free delivery above this subtotal</span>
                   </div>
 
                   <div>
@@ -1835,7 +1644,6 @@ export const AdminDashboard: React.FC = () => {
                       onChange={e => setSettingsForm({ ...settingsForm, standardShippingFee: Number(e.target.value) })}
                       className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-mono font-bold"
                     />
-                    <span className="text-[10px] text-neutral-400 mt-1 block">Charged on orders below threshold</span>
                   </div>
                 </div>
               </div>
@@ -1872,102 +1680,31 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
-              <div className="bg-white p-6 border border-[#EEEEEC] shadow-sm space-y-4">
-                <h4 className="font-serif-luxury font-bold text-sm text-[#111111] pb-2 border-b border-[#EEEEEC]">
-                  Atelier Support & Contact Channels
+              {/* Catalog & Store State Maintenance */}
+              <div className="bg-[#FAF8F5] p-6 border border-[#D8C7AE] shadow-sm space-y-3">
+                <h4 className="font-serif-luxury font-bold text-sm text-[#111111]">
+                  Atelier Database & Demo Catalog Maintenance
                 </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div>
-                    <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                      Phone Number
-                    </label>
-                    <input
-                      type="text"
-                      value={settingsForm.supportPhone}
-                      onChange={e => setSettingsForm({ ...settingsForm, supportPhone: e.target.value })}
-                      className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                      WhatsApp Hotline
-                    </label>
-                    <input
-                      type="text"
-                      value={settingsForm.whatsappNumber}
-                      onChange={e => setSettingsForm({ ...settingsForm, whatsappNumber: e.target.value })}
-                      className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                      Support Email
-                    </label>
-                    <input
-                      type="email"
-                      value={settingsForm.supportEmail}
-                      onChange={e => setSettingsForm({ ...settingsForm, supportEmail: e.target.value })}
-                      className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs"
-                    />
-                  </div>
+                <p className="text-xs text-neutral-600 leading-relaxed">
+                  If you ever need to restore the luxury footwear demonstration catalog (8 models, 4 categories, 6 collections, active coupons, and sample orders), click below. Your changes will sync automatically to the storefront.
+                </p>
+                <div className="pt-2 flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Restore initial sample footwear models, categories, and collections? Any custom added items will be reset to initial defaults.')) {
+                        resetDemoCatalog();
+                      }
+                    }}
+                    className="bg-[#111111] text-[#D8C7AE] hover:text-white px-4 py-2 text-xs uppercase tracking-wider font-bold transition-colors cursor-pointer"
+                  >
+                    Restore Initial Footwear Catalog
+                  </button>
                 </div>
               </div>
-
             </div>
-
-          </div>
-
-          <div className="flex justify-end pt-4">
-            <button
-              type="submit"
-              className="bg-[#111111] text-white px-8 py-3 text-xs uppercase tracking-widest font-bold hover:bg-[#333333] transition-colors cursor-pointer shadow-lg"
-            >
-              Update All Storefront Settings
-            </button>
           </div>
         </form>
-      )}
-
-      {/* ========================================================= */}
-      {/* 11. INQUIRIES & NEWSLETTER */}
-      {/* ========================================================= */}
-      {activeTab === 'inquiries' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white border border-[#EEEEEC] p-6 space-y-4 shadow-sm">
-            <h3 className="text-sm font-bold text-[#111111]">Customer Inquiries ({contactMessages.length})</h3>
-            {contactMessages.length === 0 ? (
-              <p className="text-xs text-neutral-500 italic">No inquiries received yet.</p>
-            ) : (
-              <div className="divide-y divide-[#EEEEEC] space-y-3">
-                {contactMessages.map((msg, idx) => (
-                  <div key={idx} className="pt-3 first:pt-0 space-y-1 text-xs">
-                    <div className="flex justify-between font-bold text-neutral-800">
-                      <span>{msg.name} ({msg.email} · {msg.phone})</span>
-                      <span className="font-mono text-neutral-400 font-normal">
-                        {new Date(msg.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="text-neutral-700 font-semibold">{msg.subject}</div>
-                    <p className="text-neutral-600 bg-[#F8F8F6] p-2.5 border border-[#EEEEEC]">{msg.message}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white border border-[#EEEEEC] p-6 space-y-4 shadow-sm">
-            <h3 className="text-sm font-bold text-[#111111]">VIP Subscribers ({subscribers.length})</h3>
-            <div className="divide-y divide-[#EEEEEC] max-h-96 overflow-y-auto">
-              {subscribers.map((sub, i) => (
-                <div key={i} className="py-2.5 flex justify-between text-xs text-neutral-700">
-                  <span className="font-mono">{sub.email}</span>
-                  <span className="text-neutral-400">{new Date(sub.createdAt).toLocaleDateString()}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       )}
 
       {/* ========================================================= */}
@@ -1986,7 +1723,7 @@ export const AdminDashboard: React.FC = () => {
                   setIsProductModalOpen(false);
                   setEditingProduct(null);
                 }}
-                className="text-neutral-400 hover:text-black cursor-pointer"
+                className="text-neutral-400 hover:text-black cursor-pointer text-base"
               >
                 ✕
               </button>
@@ -2085,19 +1822,49 @@ export const AdminDashboard: React.FC = () => {
 
               <div>
                 <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">
-                  Product Image URL (e.g. /images/hero_luxury_sneaker_1794183121618.jpg or web URL) *
+                  Product Image (URL or Pick Preset) *
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={editingProduct.images[0] || ''}
-                  onChange={e => {
-                    const newImages = [...editingProduct.images];
-                    newImages[0] = e.target.value;
-                    setEditingProduct({ ...editingProduct, images: newImages });
-                  }}
-                  className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs font-mono"
-                />
+                <div className="flex gap-2 mb-2 items-center">
+                  <input
+                    type="text"
+                    required
+                    value={editingProduct.images[0] || ''}
+                    onChange={e => {
+                      const newImages = [...editingProduct.images];
+                      newImages[0] = e.target.value;
+                      setEditingProduct({ ...editingProduct, images: newImages });
+                    }}
+                    placeholder="./images/product_men_sneaker_1794183121675.jpg or https://..."
+                    className="flex-1 bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs font-mono"
+                  />
+                  {editingProduct.images[0] && (
+                    <div className="w-10 h-10 border border-[#EEEEEC] bg-[#111111] shrink-0 overflow-hidden">
+                      <img src={editingProduct.images[0]} alt="preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5 text-[10px]">
+                  <span className="text-neutral-400 py-0.5">Quick Presets:</span>
+                  {[
+                    { label: 'Obsidian Low', path: './images/product_men_sneaker_1794183121675.jpg' },
+                    { label: 'Travertine Runner', path: './images/hero_luxury_sneaker_1794183121618.jpg' },
+                    { label: 'Champagne Runner', path: './images/product_women_runner_1794183121544.jpg' },
+                    { label: 'Casual Loafer', path: './images/product_casual_loafers_1794183123383.jpg' }
+                  ].map(preset => (
+                    <button
+                      key={preset.label}
+                      type="button"
+                      onClick={() => {
+                        const newImages = [...editingProduct.images];
+                        newImages[0] = preset.path;
+                        setEditingProduct({ ...editingProduct, images: newImages });
+                      }}
+                      className="px-2 py-0.5 bg-neutral-100 hover:bg-[#D8C7AE] text-neutral-800 transition-colors border border-neutral-200 cursor-pointer"
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -2127,7 +1894,7 @@ export const AdminDashboard: React.FC = () => {
                     const c = e.target.value.split(',').map(s => s.trim()).filter(Boolean);
                     setEditingProduct({ ...editingProduct, colors: c });
                   }}
-                  placeholder="Obsidian Black, Travertine Beige, Cognac Brown"
+                  placeholder="Obsidian Black, Travertine Beige"
                   className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs"
                 />
               </div>
@@ -2167,248 +1934,20 @@ export const AdminDashboard: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* MODAL: ORDER DETAILS */}
+      {/* MODAL: ADD / EDIT CATEGORY */}
       {/* ========================================================= */}
-      {selectedOrderDetails && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-[#EEEEEC] max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8">
-            <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-[#8C7A5E] font-bold">
-                  Order Management
-                </span>
-                <h3 className="text-xl font-serif-luxury font-bold text-[#111111]">
-                  Order {selectedOrderDetails.orderNumber}
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedOrderDetails(null)}
-                className="text-neutral-400 hover:text-black cursor-pointer text-base"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Customer & Address Details */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#FAF8F5] p-4 border border-[#D8C7AE]/40 text-xs">
-              <div>
-                <span className="text-neutral-500 block uppercase font-bold text-[10px]">Customer Information</span>
-                <div className="font-bold text-sm text-[#111111]">{selectedOrderDetails.customer.fullName}</div>
-                <div className="font-mono text-neutral-700">{selectedOrderDetails.customer.phone}</div>
-                <div className="text-neutral-600">{selectedOrderDetails.customer.email}</div>
-              </div>
-
-              <div>
-                <span className="text-neutral-500 block uppercase font-bold text-[10px]">Shipping Destination</span>
-                <div className="text-neutral-800 font-medium">
-                  {selectedOrderDetails.customer.address}
-                </div>
-                <div className="text-neutral-600">
-                  {selectedOrderDetails.customer.city} {selectedOrderDetails.customer.postalCode}
-                </div>
-                {selectedOrderDetails.customer.notes && (
-                  <div className="text-neutral-500 italic mt-1">
-                    Notes: {selectedOrderDetails.customer.notes}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Itemized Order Items */}
-            <div className="space-y-3">
-              <h4 className="text-xs uppercase font-bold text-neutral-400">
-                Purchased Footwear ({selectedOrderDetails.items.length})
-              </h4>
-              <div className="divide-y divide-[#EEEEEC]">
-                {selectedOrderDetails.items.map((it, idx) => (
-                  <div key={idx} className="py-2.5 flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-3">
-                      <img src={it.image} alt="" className="w-12 h-12 object-cover bg-neutral-100 border shrink-0" />
-                      <div>
-                        <div className="font-bold text-[#111111]">{it.productName}</div>
-                        <div className="text-neutral-500">Size: EU {it.size} · Color: {it.color} · Qty: {it.quantity}</div>
-                      </div>
-                    </div>
-                    <div className="font-mono font-bold text-[#111111]">
-                      {formatPKR(it.price * it.quantity)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Financial Summary */}
-            <div className="p-4 bg-[#F8F8F6] border border-[#EEEEEC] text-xs space-y-1.5">
-              <div className="flex justify-between text-neutral-600">
-                <span>Subtotal</span>
-                <span className="font-mono">{formatPKR(selectedOrderDetails.subtotal)}</span>
-              </div>
-              {selectedOrderDetails.discountAmount ? (
-                <div className="flex justify-between text-emerald-700">
-                  <span>Discount ({selectedOrderDetails.couponCode || 'Coupon'})</span>
-                  <span className="font-mono">-{formatPKR(selectedOrderDetails.discountAmount)}</span>
-                </div>
-              ) : null}
-              <div className="flex justify-between text-neutral-600">
-                <span>Shipping Fee</span>
-                <span className="font-mono">{selectedOrderDetails.shipping === 0 ? 'FREE' : formatPKR(selectedOrderDetails.shipping)}</span>
-              </div>
-              <div className="flex justify-between text-sm font-bold text-[#111111] pt-1 border-t border-[#EEEEEC]">
-                <span>Total Payable</span>
-                <span className="font-mono">{formatPKR(selectedOrderDetails.total)}</span>
-              </div>
-            </div>
-
-            {/* Payment & Audit Info */}
-            <div className="p-4 bg-white border border-[#EEEEEC] text-xs space-y-2">
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Payment Channel:</span>
-                <span className="font-bold uppercase text-[#111111]">{selectedOrderDetails.payment.method}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Payment Status:</span>
-                <span className="font-bold uppercase text-amber-700">{selectedOrderDetails.payment.status}</span>
-              </div>
-              {selectedOrderDetails.payment.transactionId && (
-                <div className="flex justify-between font-mono">
-                  <span className="text-neutral-500">Transaction ID (TID):</span>
-                  <span className="font-bold text-[#111111]">{selectedOrderDetails.payment.transactionId}</span>
-                </div>
-              )}
-            </div>
-
-            {/* Quick Status Update Selector */}
-            <div className="flex items-center justify-between pt-2 border-t border-[#EEEEEC]">
-              <div className="flex items-center gap-2 text-xs">
-                <span className="font-bold text-neutral-700">Update Status:</span>
-                <select
-                  value={selectedOrderDetails.status}
-                  onChange={e => handleUpdateOrderStatus(selectedOrderDetails.id, e.target.value as any)}
-                  className="bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-semibold cursor-pointer"
-                >
-                  <option value="Pending">Pending</option>
-                  <option value="Confirmed">Confirmed</option>
-                  <option value="Processing">Processing</option>
-                  <option value="Shipped">Shipped</option>
-                  <option value="Out for Delivery">Out for Delivery</option>
-                  <option value="Delivered">Delivered</option>
-                  <option value="Cancelled">Cancelled</option>
-                </select>
-              </div>
-
-              <button
-                onClick={() => setSelectedOrderDetails(null)}
-                className="bg-[#111111] text-white px-4 py-2 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* MODAL: JAZZCASH VERIFY */}
-      {/* ========================================================= */}
-      {verifyingOrder && (
+      {isCategoryModalOpen && editingCategory && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white border border-[#EEEEEC] max-w-lg w-full p-6 space-y-6 shadow-2xl">
+          <form onSubmit={handleSaveCategory} className="bg-white border border-[#EEEEEC] max-w-md w-full p-6 space-y-4 shadow-2xl">
             <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-[#8C7A5E] font-bold">Manual Payment Audit</span>
-                <h3 className="text-lg font-serif-luxury font-bold text-[#111111]">
-                  Verify JazzCash Transaction
-                </h3>
-              </div>
-              <button
-                onClick={() => setVerifyingOrder(null)}
-                className="text-neutral-400 hover:text-black cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs bg-[#FAF8F5] p-4 border border-[#D8C7AE]/40">
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Order ID:</span>
-                <span className="font-mono font-bold text-[#111111]">{verifyingOrder.orderNumber}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Customer:</span>
-                <span className="font-semibold text-[#111111]">{verifyingOrder.customer.fullName} ({verifyingOrder.customer.phone})</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Amount Due:</span>
-                <span className="font-mono font-bold text-[#111111]">{formatPKR(verifyingOrder.total)}</span>
-              </div>
-              <div className="flex justify-between pt-2 border-t border-[#D8C7AE]/30">
-                <span className="text-neutral-500 font-bold">Customer Submitted TID:</span>
-                <span className="font-mono font-bold text-base text-neutral-900 bg-white px-2 py-0.5 border border-[#D8C7AE]">
-                  {verifyingOrder.payment.transactionId || 'None'}
-                </span>
-              </div>
-              {verifyingOrder.payment.screenshotUrl && (
-                <div className="pt-2">
-                  <span className="text-neutral-500 block mb-1">Customer Receipt Screenshot:</span>
-                  <img
-                    src={verifyingOrder.payment.screenshotUrl}
-                    alt="Payment Screenshot"
-                    className="max-h-48 rounded border object-contain"
-                  />
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="text-xs uppercase tracking-wider font-semibold text-neutral-700 block mb-1">
-                Admin Audit Notes
-              </label>
-              <input
-                type="text"
-                value={adminNote}
-                onChange={e => setAdminNote(e.target.value)}
-                placeholder="e.g. Confirmed in JazzCash app statement ending in 8905"
-                className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs outline-none"
-              />
-            </div>
-
-            <div className="flex gap-3 pt-2">
+              <h3 className="text-lg font-serif-luxury font-bold text-[#111111]">
+                {editingCategory.id.startsWith('new-') ? 'Add Category' : 'Edit Category'}
+              </h3>
               <button
                 type="button"
-                onClick={() => handleVerifyPayment('verified')}
-                className="flex-1 bg-emerald-700 text-white py-2.5 text-xs uppercase font-bold hover:bg-emerald-800 transition-colors cursor-pointer"
-              >
-                Approve Payment (Mark Paid)
-              </button>
-              <button
-                type="button"
-                onClick={() => handleVerifyPayment('rejected')}
-                className="flex-1 bg-rose-700 text-white py-2.5 text-xs uppercase font-bold hover:bg-rose-800 transition-colors cursor-pointer"
-              >
-                Reject Payment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* MODAL: CUSTOMER ORDER HISTORY */}
-      {/* ========================================================= */}
-      {viewingCustomer && selectedCustomerOrders && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white border border-[#EEEEEC] max-w-xl w-full p-6 space-y-5 shadow-2xl my-8">
-            <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
-              <div>
-                <span className="text-[10px] uppercase tracking-widest text-[#8C7A5E] font-bold">Client History</span>
-                <h3 className="text-lg font-serif-luxury font-bold text-[#111111]">
-                  {viewingCustomer.name}'s Orders
-                </h3>
-              </div>
-              <button
                 onClick={() => {
-                  setViewingCustomer(null);
-                  setSelectedCustomerOrders(null);
+                  setIsCategoryModalOpen(false);
+                  setEditingCategory(null);
                 }}
                 className="text-neutral-400 hover:text-black cursor-pointer"
               >
@@ -2416,48 +1955,50 @@ export const AdminDashboard: React.FC = () => {
               </button>
             </div>
 
-            <div className="bg-[#FAF8F5] p-3 border border-[#D8C7AE]/40 text-xs flex justify-between">
+            <div className="space-y-3 text-xs">
               <div>
-                <span className="text-neutral-500 block text-[10px]">Phone & Email</span>
-                <span className="font-bold">{viewingCustomer.phone} · {viewingCustomer.email}</span>
+                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">Category Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={editingCategory.name}
+                  onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
+                  placeholder="e.g. Chelsea Boots"
+                  className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs outline-none"
+                />
               </div>
+
               <div>
-                <span className="text-neutral-500 block text-[10px]">Total Lifetime Spend</span>
-                <span className="font-mono font-bold text-sm text-[#111111]">{formatPKR(viewingCustomer.totalSpent)}</span>
+                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  value={editingCategory.description || ''}
+                  onChange={e => setEditingCategory({ ...editingCategory, description: e.target.value })}
+                  placeholder="Handmade leather footwear for formal and casual occasions."
+                  className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs outline-none"
+                />
               </div>
             </div>
 
-            <div className="space-y-3 max-h-80 overflow-y-auto divide-y divide-[#EEEEEC]">
-              {selectedCustomerOrders.map(ord => (
-                <div key={ord.id} className="pt-3 first:pt-0 text-xs space-y-1">
-                  <div className="flex justify-between font-bold">
-                    <span className="font-mono">{ord.orderNumber}</span>
-                    <span className="font-mono">{formatPKR(ord.total)}</span>
-                  </div>
-                  <div className="flex justify-between text-neutral-500 text-[11px]">
-                    <span>Status: {ord.status} · Payment: {ord.payment.method} ({ord.payment.status})</span>
-                    <span>{new Date(ord.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <div className="text-neutral-600">
-                    {ord.items.map(i => `${i.productName} (size ${i.size})`).join(', ')}
-                  </div>
-                </div>
-              ))}
-              {selectedCustomerOrders.length === 0 && (
-                <div className="text-center py-6 text-neutral-400 text-xs">No orders recorded for this customer.</div>
-              )}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="submit"
+                className="flex-1 bg-[#111111] text-white py-2.5 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
+              >
+                Save Category
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsCategoryModalOpen(false);
+                  setEditingCategory(null);
+                }}
+                className="border border-[#EEEEEC] px-4 py-2.5 text-xs uppercase cursor-pointer"
+              >
+                Cancel
+              </button>
             </div>
-
-            <button
-              onClick={() => {
-                setViewingCustomer(null);
-                setSelectedCustomerOrders(null);
-              }}
-              className="w-full bg-[#111111] text-white py-2.5 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
+          </form>
         </div>
       )}
 
@@ -2562,75 +2103,6 @@ export const AdminDashboard: React.FC = () => {
       )}
 
       {/* ========================================================= */}
-      {/* MODAL: ADD / EDIT CATEGORY */}
-      {/* ========================================================= */}
-      {isCategoryModalOpen && editingCategory && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <form onSubmit={handleSaveCategory} className="bg-white border border-[#EEEEEC] max-w-md w-full p-6 space-y-4 shadow-2xl">
-            <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
-              <h3 className="text-lg font-serif-luxury font-bold text-[#111111]">
-                {editingCategory.id.startsWith('new-') ? 'Add Category' : 'Edit Category'}
-              </h3>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsCategoryModalOpen(false);
-                  setEditingCategory(null);
-                }}
-                className="text-neutral-400 hover:text-black cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">Category Name *</label>
-                <input
-                  type="text"
-                  required
-                  value={editingCategory.name}
-                  onChange={e => setEditingCategory({ ...editingCategory, name: e.target.value })}
-                  placeholder="e.g. Chelsea Boots"
-                  className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">Description</label>
-                <textarea
-                  rows={2}
-                  value={editingCategory.description || ''}
-                  onChange={e => setEditingCategory({ ...editingCategory, description: e.target.value })}
-                  placeholder="Handmade leather footwear for formal and casual occasions."
-                  className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                type="submit"
-                className="flex-1 bg-[#111111] text-white py-2.5 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
-              >
-                Save Category
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsCategoryModalOpen(false);
-                  setEditingCategory(null);
-                }}
-                className="border border-[#EEEEEC] px-4 py-2.5 text-xs uppercase cursor-pointer"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      {/* ========================================================= */}
       {/* MODAL: ADD / EDIT COUPON */}
       {/* ========================================================= */}
       {isCouponModalOpen && editingCoupon && (
@@ -2693,7 +2165,7 @@ export const AdminDashboard: React.FC = () => {
               </div>
 
               <div>
-                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">Minimum Subtotal Required (PKR)</label>
+                <label className="text-xs uppercase font-semibold text-neutral-700 block mb-1">Minimum Subtotal (PKR)</label>
                 <input
                   type="number"
                   value={editingCoupon.minPurchase}
@@ -2735,6 +2207,261 @@ export const AdminDashboard: React.FC = () => {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: ORDER DETAILS */}
+      {/* ========================================================= */}
+      {selectedOrderDetails && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-[#EEEEEC] max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl my-8">
+            <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-[#8C7A5E] font-bold">
+                  Order Management
+                </span>
+                <h3 className="text-xl font-serif-luxury font-bold text-[#111111]">
+                  Order {selectedOrderDetails.orderNumber}
+                </h3>
+              </div>
+              <button
+                onClick={() => setSelectedOrderDetails(null)}
+                className="text-neutral-400 hover:text-black cursor-pointer text-base"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#FAF8F5] p-4 border border-[#D8C7AE]/40 text-xs">
+              <div>
+                <span className="text-neutral-500 block uppercase font-bold text-[10px]">Customer Details</span>
+                <div className="font-bold text-sm text-[#111111]">{selectedOrderDetails.customer.fullName}</div>
+                <div className="font-mono text-neutral-700">{selectedOrderDetails.customer.phone}</div>
+                <div className="text-neutral-600">{selectedOrderDetails.customer.email}</div>
+              </div>
+
+              <div>
+                <span className="text-neutral-500 block uppercase font-bold text-[10px]">Shipping Destination</span>
+                <div className="text-neutral-800 font-medium">{selectedOrderDetails.customer.address}</div>
+                <div className="text-neutral-600">{selectedOrderDetails.customer.city} {selectedOrderDetails.customer.postalCode}</div>
+                {selectedOrderDetails.customer.notes && (
+                  <div className="text-neutral-500 italic mt-1">Notes: {selectedOrderDetails.customer.notes}</div>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-xs uppercase font-bold text-neutral-400">
+                Purchased Footwear ({selectedOrderDetails.items.length})
+              </h4>
+              <div className="divide-y divide-[#EEEEEC]">
+                {selectedOrderDetails.items.map((it, idx) => (
+                  <div key={idx} className="py-2.5 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-3">
+                      <img src={it.image?.startsWith('/') ? `.${it.image}` : it.image} alt="" className="w-12 h-12 object-cover bg-neutral-100 border shrink-0" />
+                      <div>
+                        <div className="font-bold text-[#111111]">{it.productName}</div>
+                        <div className="text-neutral-500">Size: EU {it.size} · Color: {it.color} · Qty: {it.quantity}</div>
+                      </div>
+                    </div>
+                    <div className="font-mono font-bold text-[#111111]">{formatPKR(it.price * it.quantity)}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="p-4 bg-[#F8F8F6] border border-[#EEEEEC] text-xs space-y-1.5">
+              <div className="flex justify-between text-neutral-600">
+                <span>Subtotal</span>
+                <span className="font-mono">{formatPKR(selectedOrderDetails.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-sm font-bold text-[#111111] pt-1 border-t border-[#EEEEEC]">
+                <span>Total Payable</span>
+                <span className="font-mono">{formatPKR(selectedOrderDetails.total)}</span>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2 border-t border-[#EEEEEC]">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-bold text-neutral-700">Update Status:</span>
+                <select
+                  value={selectedOrderDetails.status}
+                  onChange={async e => {
+                    const newStatus = e.target.value as Order['status'];
+                    await updateOrderStatus(selectedOrderDetails.id, newStatus);
+                    setSelectedOrderDetails({ ...selectedOrderDetails, status: newStatus });
+                    showToast(`Order status updated to ${newStatus}`);
+                  }}
+                  className="bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs font-semibold cursor-pointer"
+                >
+                  <option value="Pending">Pending</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+
+              <button
+                onClick={() => setSelectedOrderDetails(null)}
+                className="bg-[#111111] text-white px-4 py-2 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: JAZZCASH VERIFY */}
+      {/* ========================================================= */}
+      {verifyingOrder && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-[#EEEEEC] max-w-lg w-full p-6 space-y-6 shadow-2xl">
+            <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-[#8C7A5E] font-bold">Manual Payment Audit</span>
+                <h3 className="text-lg font-serif-luxury font-bold text-[#111111]">
+                  Verify JazzCash Transaction
+                </h3>
+              </div>
+              <button onClick={() => setVerifyingOrder(null)} className="text-neutral-400 hover:text-black cursor-pointer">✕</button>
+            </div>
+
+            <div className="space-y-3 text-xs bg-[#FAF8F5] p-4 border border-[#D8C7AE]/40">
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Order ID:</span>
+                <span className="font-mono font-bold text-[#111111]">{verifyingOrder.orderNumber}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Customer:</span>
+                <span className="font-semibold text-[#111111]">{verifyingOrder.customer.fullName} ({verifyingOrder.customer.phone})</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-neutral-500">Amount Due:</span>
+                <span className="font-mono font-bold text-[#111111]">{formatPKR(verifyingOrder.total)}</span>
+              </div>
+              <div className="flex justify-between pt-2 border-t border-[#D8C7AE]/30">
+                <span className="text-neutral-500 font-bold">Customer Submitted TID:</span>
+                <span className="font-mono font-bold text-base text-neutral-900 bg-white px-2 py-0.5 border border-[#D8C7AE]">
+                  {verifyingOrder.payment.transactionId || 'None'}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs uppercase tracking-wider font-semibold text-neutral-700 block mb-1">
+                Admin Audit Notes
+              </label>
+              <input
+                type="text"
+                value={adminNote}
+                onChange={e => setAdminNote(e.target.value)}
+                placeholder="e.g. Confirmed in JazzCash app statement ending in 8905"
+                className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-xs outline-none"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={async () => {
+                  await verifyOrderPayment(verifyingOrder.id, 'verified', adminNote);
+                  showToast('JazzCash payment approved & marked paid.');
+                  setVerifyingOrder(null);
+                  setAdminNote('');
+                }}
+                className="flex-1 bg-emerald-700 text-white py-2.5 text-xs uppercase font-bold hover:bg-emerald-800 transition-colors cursor-pointer"
+              >
+                Approve Payment (Mark Paid)
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  await verifyOrderPayment(verifyingOrder.id, 'rejected', adminNote);
+                  showToast('JazzCash payment rejected.');
+                  setVerifyingOrder(null);
+                  setAdminNote('');
+                }}
+                className="flex-1 bg-rose-700 text-white py-2.5 text-xs uppercase font-bold hover:bg-rose-800 transition-colors cursor-pointer"
+              >
+                Reject Payment
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* MODAL: CUSTOMER ORDER HISTORY */}
+      {/* ========================================================= */}
+      {viewingCustomer && selectedCustomerOrders && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white border border-[#EEEEEC] max-w-xl w-full p-6 space-y-5 shadow-2xl my-8">
+            <div className="flex justify-between items-start pb-3 border-b border-[#EEEEEC]">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-[#8C7A5E] font-bold">Client History</span>
+                <h3 className="text-lg font-serif-luxury font-bold text-[#111111]">
+                  {viewingCustomer.name}'s Orders
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setViewingCustomer(null);
+                  setSelectedCustomerOrders(null);
+                }}
+                className="text-neutral-400 hover:text-black cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="bg-[#FAF8F5] p-3 border border-[#D8C7AE]/40 text-xs flex justify-between">
+              <div>
+                <span className="text-neutral-500 block text-[10px]">Phone & Email</span>
+                <span className="font-bold">{viewingCustomer.phone} · {viewingCustomer.email}</span>
+              </div>
+              <div>
+                <span className="text-neutral-500 block text-[10px]">Total Lifetime Spend</span>
+                <span className="font-mono font-bold text-sm text-[#111111]">{formatPKR(viewingCustomer.totalSpent)}</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 max-h-80 overflow-y-auto divide-y divide-[#EEEEEC]">
+              {selectedCustomerOrders.map(ord => (
+                <div key={ord.id} className="pt-3 first:pt-0 text-xs space-y-1">
+                  <div className="flex justify-between font-bold">
+                    <span className="font-mono">{ord.orderNumber}</span>
+                    <span className="font-mono">{formatPKR(ord.total)}</span>
+                  </div>
+                  <div className="flex justify-between text-neutral-500 text-[11px]">
+                    <span>Status: {ord.status} · Payment: {ord.payment.method} ({ord.payment.status})</span>
+                    <span>{new Date(ord.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="text-neutral-600">
+                    {ord.items.map(i => `${i.productName} (size ${i.size})`).join(', ')}
+                  </div>
+                </div>
+              ))}
+              {selectedCustomerOrders.length === 0 && (
+                <div className="text-center py-6 text-neutral-400 text-xs">No orders recorded for this customer.</div>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setViewingCustomer(null);
+                setSelectedCustomerOrders(null);
+              }}
+              className="w-full bg-[#111111] text-white py-2.5 text-xs uppercase font-bold hover:bg-[#333333] cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
 

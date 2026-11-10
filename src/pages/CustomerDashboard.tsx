@@ -4,28 +4,22 @@ import { Order } from '../types';
 import { User, Package, MapPin, Truck, LogOut, ArrowRight, Clock, ShieldCheck } from 'lucide-react';
 
 export const CustomerDashboard: React.FC = () => {
-  const { user, logout, setCurrentPage, formatPKR, setActiveTrackingOrder } = useShop();
+  const { user, logout, setCurrentPage, formatPKR, setActiveTrackingOrder, orders: contextOrders } = useShop();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUserOrders = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch(`/api/orders?userId=${encodeURIComponent(user?.id || '')}`);
-        const data = await res.json();
-        if (res.ok && data.success) {
-          setOrders(data.orders || []);
-        }
-      } catch (err) {
-        console.error('Failed to load user orders:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserOrders();
-  }, [user]);
+    if (!user) return;
+    // Derive user orders from context state (persistent across GitHub Pages & local)
+    const userEmail = (user.email || '').toLowerCase().trim();
+    const userPhone = (user.phone || '').trim();
+    const matched = contextOrders.filter(o => {
+      const custEmail = (o.customer.email || '').toLowerCase().trim();
+      const custPhone = (o.customer.phone || '').trim();
+      return (userEmail && custEmail === userEmail) || (userPhone && custPhone === userPhone);
+    });
+    setOrders(matched);
+  }, [user, contextOrders]);
 
   if (!user) {
     return (
@@ -41,6 +35,8 @@ export const CustomerDashboard: React.FC = () => {
       </div>
     );
   }
+
+  const isMasterAdmin = user.role === 'admin' && user.email.toLowerCase() === '19beeskicks@gmail.com';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
@@ -59,7 +55,7 @@ export const CustomerDashboard: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {user.role === 'admin' && (
+          {isMasterAdmin && (
             <button
               onClick={() => setCurrentPage('admin')}
               className="bg-[#D8C7AE] text-[#111111] px-4 py-2 text-xs uppercase font-bold hover:bg-white border border-neutral-300 transition-colors cursor-pointer"

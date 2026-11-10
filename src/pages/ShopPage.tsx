@@ -4,7 +4,7 @@ import { ProductCard } from '../components/ProductCard';
 import { Filter, SlidersHorizontal, RotateCcw, Search } from 'lucide-react';
 
 export const ShopPage: React.FC = () => {
-  const { products, selectedCollection, setSelectedCollection, formatPKR } = useShop();
+  const { products, categories, selectedCollection, setSelectedCollection, formatPKR } = useShop();
 
   const [categoryFilter, setCategoryFilter] = useState<string>(selectedCollection || 'all');
   const [selectedSize, setSelectedSize] = useState<number | null>(null);
@@ -149,27 +149,49 @@ export const ShopPage: React.FC = () => {
               Categories
             </label>
             <div className="flex flex-col space-y-1 text-xs">
-              {[
-                { id: 'all', label: 'All Footwear' },
-                { id: 'men', label: "Men's Shoes" },
-                { id: 'women', label: "Women's Shoes" },
-                { id: 'sneakers', label: 'Designer Sneakers' },
-                { id: 'casual', label: 'Casual & Loafers' },
-                { id: 'bestsellers', label: 'Best Sellers' },
-                { id: 'newarrivals', label: 'New Arrivals' }
-              ].map(cat => (
+              <button
+                onClick={() => setCategoryFilter('all')}
+                className={`text-left py-1.5 px-2 text-xs transition-colors cursor-pointer flex justify-between ${
+                  categoryFilter === 'all'
+                    ? 'bg-[#111111] text-white font-semibold'
+                    : 'text-neutral-700 hover:bg-neutral-50'
+                }`}
+              >
+                <span>All Footwear</span>
+              </button>
+              {categories.map(cat => (
                 <button
                   key={cat.id}
-                  onClick={() => setCategoryFilter(cat.id)}
+                  onClick={() => setCategoryFilter(cat.slug)}
                   className={`text-left py-1.5 px-2 text-xs transition-colors cursor-pointer flex justify-between ${
-                    categoryFilter === cat.id
+                    categoryFilter === cat.slug
                       ? 'bg-[#111111] text-white font-semibold'
                       : 'text-neutral-700 hover:bg-neutral-50'
                   }`}
                 >
-                  <span>{cat.label}</span>
+                  <span>{cat.name}</span>
                 </button>
               ))}
+              <button
+                onClick={() => setCategoryFilter('bestsellers')}
+                className={`text-left py-1.5 px-2 text-xs transition-colors cursor-pointer flex justify-between ${
+                  categoryFilter === 'bestsellers'
+                    ? 'bg-[#111111] text-white font-semibold'
+                    : 'text-neutral-700 hover:bg-neutral-50'
+                }`}
+              >
+                <span>Best Sellers</span>
+              </button>
+              <button
+                onClick={() => setCategoryFilter('newarrivals')}
+                className={`text-left py-1.5 px-2 text-xs transition-colors cursor-pointer flex justify-between ${
+                  categoryFilter === 'newarrivals'
+                    ? 'bg-[#111111] text-white font-semibold'
+                    : 'text-neutral-700 hover:bg-neutral-50'
+                }`}
+              >
+                <span>New Arrivals</span>
+              </button>
             </div>
           </div>
 

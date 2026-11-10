@@ -141,11 +141,11 @@ export const Navbar: React.FC = () => {
           {/* User Account / Admin */}
           {user ? (
             <button
-              onClick={() => navigateTo(user.role === 'admin' ? 'admin' : 'profile')}
+              onClick={() => navigateTo(user.role === 'admin' && user.email.toLowerCase() === '19beeskicks@gmail.com' ? 'admin' : 'profile')}
               className="flex items-center gap-1.5 p-1.5 hover:text-[#D8C7AE] transition-colors text-xs uppercase tracking-wider font-medium cursor-pointer"
               title={user.name}
             >
-              {user.role === 'admin' ? (
+              {user.role === 'admin' && user.email.toLowerCase() === '19beeskicks@gmail.com' ? (
                 <span className="flex items-center gap-1 text-[#111111] font-semibold">
                   <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   <span className="hidden md:inline">Admin</span>
@@ -277,10 +277,10 @@ export const Navbar: React.FC = () => {
               <div className="flex items-center gap-3">
                 <span className="text-xs text-neutral-600">Signed in as <strong>{user.name}</strong></span>
                 <button
-                  onClick={() => navigateTo(user.role === 'admin' ? 'admin' : 'profile')}
+                  onClick={() => navigateTo(user.role === 'admin' && user.email.toLowerCase() === '19beeskicks@gmail.com' ? 'admin' : 'profile')}
                   className="text-xs uppercase font-bold text-[#111111] underline cursor-pointer"
                 >
-                  Dashboard
+                  {user.role === 'admin' && user.email.toLowerCase() === '19beeskicks@gmail.com' ? 'Admin Panel' : 'My Account'}
                 </button>
               </div>
             ) : (

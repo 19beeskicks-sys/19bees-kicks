@@ -302,7 +302,7 @@ export const CheckoutPage: React.FC = () => {
                   required
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
-                  placeholder="e.g. Hamza Khan"
+                  placeholder="e.g. Asad Siddiqui"
                   className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs text-[#111111] outline-none focus:border-[#111111]"
                 />
               </div>
@@ -331,7 +331,7 @@ export const CheckoutPage: React.FC = () => {
                   type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  placeholder="e.g. hamza@gmail.com"
+                  placeholder="e.g. asad@example.com"
                   className="w-full bg-[#F8F8F6] border border-[#EEEEEC] p-2.5 text-xs text-[#111111] outline-none focus:border-[#111111]"
                 />
               </div>

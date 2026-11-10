@@ -30,7 +30,11 @@ export const AuthPages: React.FC = () => {
     const res = await login(loginEmail, loginPassword);
     setLoading(false);
     if (res.success) {
-      setCurrentPage('home');
+      if (loginEmail.toLowerCase().trim() === '19beeskicks@gmail.com') {
+        setCurrentPage('admin');
+      } else {
+        setCurrentPage('home');
+      }
     } else {
       setErrorMsg(res.message || 'Invalid credentials');
     }
@@ -57,24 +61,14 @@ export const AuthPages: React.FC = () => {
     });
     setLoading(false);
     if (res.success) {
-      setCurrentPage('home');
+      if (regEmail.toLowerCase().trim() === '19beeskicks@gmail.com') {
+        setCurrentPage('admin');
+      } else {
+        setCurrentPage('home');
+      }
     } else {
       setErrorMsg(res.message || 'Registration failed');
     }
-  };
-
-  const quickDemoLogin = (email: string, pass: string) => {
-    setLoginEmail(email);
-    setLoginPassword(pass);
-    login(email, pass).then(res => {
-      if (res.success) {
-        if (email.includes('admin') || email.includes('samad')) {
-          setCurrentPage('admin');
-        } else {
-          setCurrentPage('profile');
-        }
-      }
-    });
   };
 
   return (
@@ -163,38 +157,6 @@ export const AuthPages: React.FC = () => {
           >
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>
-
-          {/* Quick Demo Credentials */}
-          <div className="pt-4 border-t border-[#EEEEEC] space-y-2">
-            <span className="text-[10px] uppercase tracking-wider text-neutral-400 font-bold block text-center">
-              One-Click Evaluation Access
-            </span>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => quickDemoLogin('19beeskicks@gmail.com', 'samad123')}
-                className="bg-[#F8F8F6] border border-[#D8C7AE] p-2 text-left hover:bg-[#FAF8F5] transition-colors cursor-pointer"
-              >
-                <div className="text-[11px] font-bold text-neutral-900 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                  <span>Admin Samad</span>
-                </div>
-                <div className="text-[10px] text-neutral-500">19beeskicks@gmail.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => quickDemoLogin('hamza.khan@gmail.com', 'password123')}
-                className="bg-[#F8F8F6] border border-[#EEEEEC] p-2 text-left hover:bg-neutral-100 transition-colors cursor-pointer"
-              >
-                <div className="text-[11px] font-bold text-neutral-900 flex items-center gap-1">
-                  <UserCheck className="w-3 h-3 text-neutral-600" />
-                  <span>Customer Hamza</span>
-                </div>
-                <div className="text-[10px] text-neutral-500">hamza.khan@gmail.com</div>
-              </button>
-            </div>
-          </div>
         </form>
       )}
 
